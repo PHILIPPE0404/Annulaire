@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annuaire Établissement</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --card: #1a1a22;
+    --card-hover: #222230;
+    --accent: #f97316;
+    --accent2: #fb923c;
+    --text: #f1f0ee;
+    --muted: #888898;
+    --border: #2a2a38;
+    --eleve: #f97316;
+    --enseignant: #22c55e;
+    --personnel: #a855f7;
+    --parent: #3b82f6;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 48px 32px 32px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #13131a 0%, #0f0f13 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 300px;
+    background: radial-gradient(ellipse, rgba(249,115,22,0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -2px;
+    position: relative;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  header p {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 0.95rem;
+  }
+
+  .search-wrapper {
+    padding: 32px 32px 24px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 18px;
+    color: var(--muted);
+    font-size: 1.1rem;
+    pointer-events: none;
+  }
+
+  #search {
+    width: 100%;
+    padding: 16px 18px 16px 48px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #search:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+  }
+
+  #search::placeholder { color: var(--muted); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 32px 24px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .filter-btn {
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .filter-btn.ens.active { background: var(--enseignant); border-color: var(--enseignant); }
+  .filter-btn.pers.active { background: var(--personnel); border-color: var(--personnel); }
+  .filter-btn.par.active { background: var(--parent); border-color: var(--parent); }
+
+  .stats {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 0 32px 16px;
+  }
+
+  #count { color: var(--accent); font-weight: 600; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    padding: 16px 32px 48px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 12px 16px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+    cursor: default;
+  }
+
+  .card:hover {
+    transform: translateY(-3px);
+    background: var(--card-hover);
+    border-color: #3a3a50;
+  }
+
+  .avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .avatar.eleve { background: linear-gradient(135deg, #f97316, #fb923c); }
+  .avatar.enseignant { background: linear-gradient(135deg, #16a34a, #22c55e); }
+  .avatar.personnel { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+  .avatar.parent { background: linear-gradient(135deg, #1d4ed8, #3b82f6); }
+
+  .name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .badge.eleve { background: rgba(249,115,22,0.15); color: var(--accent); }
+  .badge.enseignant { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .badge.personnel { background: rgba(168,85,247,0.15); color: #c084fc; }
+  .badge.parent { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+  .sub {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 3px;
+    font-style: italic;
+  }
+
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 64px;
+    color: var(--muted);
+  }
+
+  .no-results .icon { font-size: 3rem; margin-bottom: 16px; }
+  .no-results p { font-size: 1.1rem; }
+
+  .card.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Annuaire <span>École</span></h1>
+  <p>ent.ecollege78.fr — Recherchez un membre de l'établissement</p>
+</header>
+
+<div class="search-wrapper">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="search" placeholder="Rechercher par nom ou prénom…" autocomplete="off">
+  </div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">Tous</button>
+  <button class="filter-btn" data-filter="eleve">Élèves</button>
+  <button class="filter-btn ens" data-filter="enseignant">Enseignants</button>
+  <button class="filter-btn pers" data-filter="personnel">Personnel</button>
+  <button class="filter-btn par" data-filter="parent">Parents</button>
+</div>
+
+<div class="stats">
+  <span id="count">0</span> résultat(s) affiché(s)
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const people = [
+  // IMAGE 20 (first page, A)
+  {name:"ABDESSELEM Leïna", role:"eleve"},
+  {name:"ABDESSELEM Sohane", role:"eleve"},
+  {name:"ADAM Léna", role:"eleve"},
+  {name:"ADJANDHUN Athéna", role:"eleve"},
+  {name:"ADU Lady Théodora", role:"eleve"},
+  {name:"AGESIDAME WILLIAMS", role:"personnel", sub:"Éducation"},
+  {name:"AGZOUR Kenzo", role:"eleve"},
+  {name:"AHMED Nojaifa", role:"eleve"},
+  {name:"AHRES Eléonore", role:"eleve"},
+  {name:"AHRES EMMANUEL", role:"personnel", sub:"Éducation"},
+  {name:"AISSI Tallai", role:"eleve"},
+  {name:"AIT HIBA Hafsa", role:"eleve"},
+  {name:"AIT HIBA Omar", role:"eleve"},
+  {name:"AIT MOKHTAR Mohamed", role:"eleve"},
+  {name:"AIT MOULOUD Insaf", role:"eleve"},
+  {name:"AIT OUFEROUKH Rayane", role:"eleve"},
+  {name:"AIT OUFEROUKH Yanis", role:"eleve"},
+  {name:"AKHDAR Jana", role:"eleve"},
+  {name:"AKROUM Khalis", role:"eleve"},
+  {name:"AL JARAH MAENHAUT Jasmine", role:"eleve"},
+  {name:"ALBERTELLI Alexis", role:"eleve"},
+  {name:"ALBU Sebastian", role:"eleve"},
+  {name:"ALEXANDRE Yahel", role:"eleve"},
+  {name:"ALI BONNO Imran", role:"eleve"},
+  {name:"ALLAMASSEY Mathis", role:"eleve"},
+  {name:"ALLAMELOU Florian", role:"eleve"},
+  {name:"ALLEGRE Julie", role:"eleve"},
+  {name:"ALOPO Philippe", role:"eleve"},
+  {name:"ALOPGA Marie", role:"parent"},
+  {name:"ALVES-JOLY Samuel", role:"eleve"},
+  {name:"ALVES-TEIXEIRA Sofia", role:"eleve"},
+  {name:"AMIHALACHIOL Vasile", role:"eleve"},
+  {name:"AMOA Kouakou", role:"eleve"},
+  {name:"AMPHIARUS Elise", role:"eleve"},
+  {name:"ANDRE Aloise", role:"eleve"},
+  {name:"ANDRIANIRINA Jessie", role:"eleve"},
+  {name:"ANE Quentin", role:"eleve"},
+  {name:"ANGEVIN FABRICE", role:"enseignant", sub:"Histoire-Géo"},
+  {name:"ANINAT Raphaël", role:"eleve"},
+  {name:"ANSART Maxime", role:"eleve"},
+  {name:"AOURIR Elhachnia", role:"eleve"},
+  {name:"ARDUC Raphaël", role:"eleve"},
+  {name:"ASFOURI Assil", role:"eleve"},
+  {name:"ASFOURI Mohamed Yassine", role:"eleve"},
+  {name:"ASSAB Nawel", role:"eleve"},
+  {name:"ASSADI Shayann", role:"eleve"},
+  {name:"ASSEMAT CELINE", role:"enseignant", sub:"Français"},
+  {name:"ATHOUMANI Samia", role:"eleve"},
+  {name:"ATHOUMANI Soilha", role:"eleve"},
+  {name:"ATLAN Guillaume", role:"eleve"},
+  // IMAGE 19
+  {name:"AUBERT Luca", role:"eleve"},
+  {name:"AUDUC AURELIE", role:"enseignant", sub:"Éducation Phy."},
+  {name:"AVENEL Léana", role:"eleve"},
+  {name:"AZDAD Adam", role:"eleve"},
+  {name:"BABIARZ Liliana", role:"eleve"},
+  {name:"BABIN Maxence", role:"eleve"},
+  {name:"BACALIM Damian", role:"eleve"},
+  {name:"BACALIM Rafael", role:"eleve"},
+  {name:"BACAR Laïna", role:"eleve"},
+  {name:"BADIO Abdou-Malik", role:"eleve"},
+  {name:"BAKKAR Sophia", role:"eleve"},
+  {name:"BALDE Fatoumata", role:"eleve"},
+  {name:"BALLY Axel Noé", role:"eleve"},
+  {name:"BALLY Pierre", role:"eleve"},
+  {name:"BALTHASAR Julian", role:"eleve"},
+  {name:"BAMBA Daoudi", role:"eleve"},
+  {name:"BAMBA Yelé Noham", role:"eleve"},
+  {name:"BARADJI Aboubakar", role:"eleve"},
+  {name:"BARADJI Fodié", role:"eleve"},
+  {name:"BARADJI Foussery", role:"eleve"},
+  {name:"BARBE Djodjeka", role:"eleve"},
+  {name:"BARBE Yoani", role:"eleve"},
+  {name:"BARIOU Alba", role:"eleve"},
+  {name:"BARKOUS DRAME Inaya", role:"eleve"},
+  {name:"BARONE VACHERAT Elisa", role:"eleve"},
+  {name:"BARTRA PELAEZ Camila", role:"eleve"},
+  {name:"BAS Angélique", role:"eleve"},
+  {name:"BASHEV Nathan", role:"eleve"},
+  {name:"BASTOS Hedi", role:"eleve"},
+  {name:"BASTOS Yanis", role:"eleve"},
+  {name:"BATANGKEN Line Emma", role:"eleve"},
+  {name:"BATTINI Andrea", role:"eleve"},
+  {name:"BAUDIER Blanche", role:"eleve"},
+  {name:"BAUDIMENT Emma", role:"eleve"},
+  {name:"BAUDOUIN Aurélien", role:"eleve"},
+  {name:"BAYER Maxime", role:"eleve"},
+  {name:"BEAUDOUIN Jules", role:"eleve"},
+  {name:"BEAURAIN Eloise", role:"eleve"},
+  {name:"BEAURAIN Estelle", role:"eleve"},
+  {name:"BEJAOUI Yasmine", role:"eleve"},
+  {name:"BELGOURCH TOUNSI Romaissae", role:"eleve"},
+  {name:"BELLAVOINE Enzo-Kalil", role:"eleve"},
+  {name:"BELLIER Théo", role:"eleve"},
+  {name:"BELLIZAIRE Nervens", role:"eleve"},
+  {name:"BEN MLOUKA Fares", role:"eleve"},
+  {name:"BENCHAIB Ines", role:"eleve"},
+  {name:"BENHAMEDANE Adem", role:"eleve"},
+  {name:"BENNABI Adam", role:"eleve"},
+  {name:"BENNADJI Elyas", role:"eleve"},
+  {name:"BENSO Clémence", role:"eleve"},
+  // IMAGE 18
+  {name:"BENZID Nolan", role:"eleve"},
+  {name:"BERENGUIER Elijah", role:"eleve"},
+  {name:"BERGEAUD Florian", role:"eleve"},
+  {name:"BERGEROT Mathias", role:"eleve"},
+  {name:"BERNHARDT Marie", role:"eleve"},
+  {name:"BERROCAL DROUARD Alexis", role:"eleve"},
+  {name:"BERTET Solan", role:"eleve"},
+  {name:"BERTHIER Noah", role:"eleve"},
+  {name:"BERTIDE Thaïna", role:"eleve"},
+  {name:"BESNARD Lucie", role:"eleve"},
+  {name:"BESNARD Theo", role:"eleve"},
+  {name:"BESSE Léo", role:"eleve"},
+  {name:"BESSONNEAU Albane", role:"eleve"},
+  {name:"BESSONNEAU Romane", role:"eleve"},
+  {name:"BETAILLE BANCAL Maxime", role:"eleve"},
+  {name:"BEUF Enzo", role:"eleve"},
+  {name:"BEUF Jamice", role:"eleve"},
+  {name:"BIAMUENZE Channel", role:"eleve"},
+  {name:"BIDET Louise", role:"eleve"},
+  {name:"BIDOT Eloise", role:"eleve"},
+  {name:"BIDOT Gabriel", role:"eleve"},
+  {name:"BIDOT PATHE Maxime", role:"eleve"},
+  {name:"BIGOT Colline", role:"eleve"},
+  {name:"BIKOK YOUNDOM Nathan", role:"eleve"},
+  {name:"BILLIAU Achille", role:"eleve"},
+  {name:"BIOTTEAU Loris", role:"eleve"},
+  {name:"BIZARRO AREVALO SANDRINE", role:"enseignant"},
+  {name:"BLANDIN Zélie", role:"eleve"},
+  {name:"BLIND Baptiste", role:"eleve"},
+  {name:"BLOMME Aya", role:"eleve"},
+  {name:"BOHY Liam", role:"eleve"},
+  {name:"BOILEAU Alix", role:"eleve"},
+  {name:"BOILEAU Victor", role:"eleve"},
+  {name:"BOINEAU Julie", role:"eleve"},
+  {name:"Boize Catherine", role:"personnel", sub:"Direction"},
+  {name:"BONENFANT Antonin", role:"eleve"},
+  {name:"BONIFACE Capucine", role:"eleve"},
+  {name:"BONIFACE Maëva", role:"eleve"},
+  {name:"BONNICI Côme", role:"eleve"},
+  {name:"BORDA FERRANTI Sacha", role:"eleve"},
+  {name:"BOTTEAU Elea", role:"eleve"},
+  {name:"BOUASSIDA Mohamed Mehdi", role:"eleve"},
+  {name:"BOUBRIT Imane", role:"eleve"},
+  {name:"BOUCHERY Jean", role:"eleve"},
+  {name:"BOUDIA GAUTHERON Yanis", role:"eleve"},
+  {name:"BOUFARSA Selma", role:"eleve"},
+  {name:"BOUGHANMI Cyrine Sirine-Zhara", role:"eleve"},
+  {name:"BOUGUETOF Sirine-Zhara", role:"eleve"},
+  {name:"BOUHANIK Olivia", role:"eleve"},
+  {name:"BOUILLARD Louanne", role:"eleve"},
+  // IMAGE 17
+  {name:"BOUILLAT Valentine", role:"eleve"},
+  {name:"BOUILLOT WOLBER Ulysse", role:"eleve"},
+  {name:"BOUKHÉDIMI ELOUNI Chaïma", role:"eleve"},
+  {name:"BOUKHEROUBA Aïssa", role:"eleve"},
+  {name:"BOUKHEROUBA Leïla", role:"eleve"},
+  {name:"BOUQUET Mathias", role:"eleve"},
+  {name:"BOURAYNE Clarisse", role:"eleve"},
+  {name:"BOUREL Lohan", role:"eleve"},
+  {name:"BOURNANE Abderrahmane", role:"eleve"},
+  {name:"BOUSFEDDI Sirine", role:"eleve"},
+  {name:"BOUSNANA Mina", role:"eleve"},
+  {name:"BOUSSICAUD REDARES Lazare", role:"eleve"},
+  {name:"BOUTILLIER Sarah", role:"eleve"},
+  {name:"BOUVART CORBIERE Axelle", role:"eleve"},
+  {name:"BOUYESS Amine", role:"eleve"},
+  {name:"BOUYESS Neïla", role:"eleve"},
+  {name:"BOYER-TYBURSKI Eva", role:"eleve"},
+  {name:"BOYER Aure", role:"eleve"},
+  {name:"BRANCO REMMACHE Luna", role:"eleve"},
+  {name:"BRAULT Elea", role:"eleve"},
+  {name:"BRAUNWARTH Adele-Mathilde", role:"eleve"},
+  {name:"Brenac Emmanuelle", role:"personnel", sub:"Direction"},
+  {name:"BRIAND Arthur", role:"eleve"},
+  {name:"BRIFFAUT Lucie", role:"eleve"},
+  {name:"BRIFFAUT Marion", role:"eleve"},
+  {name:"BROCAIL Alexis", role:"eleve"},
+  {name:"BRUCHET Jérémie", role:"eleve"},
+  {name:"BUSSON Camille", role:"eleve"},
+  {name:"CABANTOUS Mattéo", role:"eleve"},
+  {name:"CACHERAT Lyvia", role:"eleve"},
+  {name:"CAFAXE Mawen", role:"eleve"},
+  {name:"CALADO CARON Elsa", role:"eleve"},
+  {name:"CALODAT LAVIGNE Noah", role:"eleve"},
+  {name:"CALVEZ Angelina", role:"eleve"},
+  {name:"CALVO Raphaël", role:"eleve"},
+  {name:"CAMARA Kaïs", role:"eleve"},
+  {name:"CAMARA Zenab", role:"eleve"},
+  {name:"CANN Cameron", role:"eleve"},
+  {name:"CANONGE Constance", role:"eleve"},
+  {name:"CANTAU Valentin", role:"eleve"},
+  {name:"CAPOBIANCO Emma", role:"eleve"},
+  {name:"CARBONELL LELASSEUX Arthur", role:"eleve"},
+  {name:"CAREBA-CASSIN Sacha", role:"eleve"},
+  {name:"CARPENTIER Bastien", role:"eleve"},
+  {name:"CARPENTIER Lauris", role:"eleve"},
+  {name:"CARRE Lea", role:"eleve"},
+  {name:"CARRIVE Olympe", role:"eleve"},
+  {name:"CARROLL Sonny", role:"eleve"},
+  {name:"CASTAINGTS Loic", role:"eleve"},
+  {name:"CASTEL Eloïse", role:"eleve"},
+  // IMAGE 16
+  {name:"CASTELL Thibault", role:"eleve"},
+  {name:"CATELIN Pétronille", role:"eleve"},
+  {name:"CAULIER Timeo", role:"eleve"},
+  {name:"CAVAGNAC Noémie", role:"eleve"},
+  {name:"CEREMIS Corina", role:"eleve"},
+  {name:"CESTER Esteban", role:"eleve"},
+  {name:"CHAABANE Sana", role:"eleve"},
+  {name:"CHALMANDRIER Zoé", role:"eleve"},
+  {name:"CHAPELET Noémia", role:"eleve"},
+  {name:"CHARBIT Raphaël", role:"eleve"},
+  {name:"CHARDON Cyrielle", role:"eleve"},
+  {name:"CHARLIER Jeanne", role:"eleve"},
+  {name:"CHARLIER Lisa", role:"eleve"},
+  {name:"CHARLON Mathis", role:"eleve"},
+  {name:"CHASTAGNOL Julia", role:"eleve"},
+  {name:"CHAUBET Lila", role:"eleve"},
+  {name:"CHAVATTE Florian", role:"eleve"},
+  {name:"CHENNOUF Elias", role:"eleve"},
+  {name:"CHEREL Juliette", role:"eleve"},
+  {name:"CHESNAIS Jade", role:"eleve"},
+  {name:"CHEVALIER Elsa", role:"eleve"},
+  {name:"CHEVREUX Mathilde", role:"eleve"},
+  {name:"CHOWDHURY Ahmed Shafi", role:"eleve"},
+  {name:"CIORA Héloïse", role:"eleve"},
+  {name:"CLAUZURE Grégoire", role:"eleve"},
+  {name:"CLEMENCIO Lukas", role:"eleve"},
+  {name:"COAT BERTRAND Raphaël", role:"eleve"},
+  {name:"COCHEREAU Mahé", role:"eleve"},
+  {name:"COCHOIX Gabin", role:"eleve"},
+  {name:"COCOL Valentin", role:"eleve"},
+  {name:"COELHO Mélanie", role:"eleve"},
+  {name:"COGARD Inès", role:"eleve"},
+  {name:"COIN Maxence", role:"eleve"},
+  {name:"COLLIARD Gaël", role:"eleve"},
+  {name:"COLLIARD William", role:"eleve"},
+  {name:"COLLIN Zoé", role:"eleve"},
+  {name:"COLOMBIER Nicolas", role:"eleve"},
+  {name:"CONDECAS DE ALMEIDA Carolina", role:"eleve"},
+  {name:"CONDREA David", role:"eleve"},
+  {name:"CORBET Estelle", role:"eleve"},
+  {name:"CORDIER Pauline", role:"eleve"},
+  {name:"CORNET BAILLON Charlie", role:"eleve"},
+  {name:"CORNIOU Emma", role:"eleve"},
+  {name:"COSSON Nathan", role:"eleve"},
+  {name:"COSTES Maxence", role:"eleve"},
+  {name:"COSTIN Bianca", role:"eleve"},
+  {name:"COULIBALY Rougui", role:"eleve"},
+  {name:"COULIBALY-RACINE Noé", role:"eleve"},
+  {name:"COUPEY Luce", role:"eleve"},
+  {name:"COURAGEUX Lena", role:"eleve"},
+  // IMAGE 15
+  {name:"CRAWFORD Tehani", role:"eleve"},
+  {name:"CRIAUD JULIA", role:"enseignant", sub:"Mathématiques"},
+  {name:"CUCEREAI Théo", role:"eleve"},
+  {name:"CUINIER Angele", role:"eleve"},
+  {name:"CYPRYSZAK ANAIS", role:"enseignant", sub:"Espagnol LV2"},
+  {name:"D'ANTERROCHES Anaelle", role:"eleve"},
+  {name:"DA COSTA Maeva", role:"eleve"},
+  {name:"DA COSTA Matéo", role:"eleve"},
+  {name:"DA PONTE Fiona", role:"eleve"},
+  {name:"DA SILVA Diego", role:"eleve"},
+  {name:"DA SILVA Inès", role:"eleve"},
+  {name:"DAGUINOT Agathe", role:"eleve"},
+  {name:"DAI John", role:"eleve"},
+  {name:"DAIM Yanis", role:"eleve"},
+  {name:"DAKOURI Lana", role:"eleve"},
+  {name:"DAMBOR Mathilde", role:"eleve"},
+  {name:"DAMTI Oren", role:"eleve"},
+  {name:"DANILOV Stephanie", role:"eleve"},
+  {name:"DANU Adrian", role:"eleve"},
+  {name:"DAROS MAROTTA TERCIOTTI Lorena", role:"eleve"},
+  {name:"DASYLVA JOLLIER Yzia", role:"eleve"},
+  {name:"DAUPTAIN Alexia", role:"eleve"},
+  {name:"DAUPTAIN Maxime", role:"eleve"},
+  {name:"DAVOUST Virgile", role:"eleve"},
+  {name:"DE BRUYN COULON Sophie", role:"eleve"},
+  {name:"DE OLIVEIRA Enzo", role:"eleve"},
+  {name:"DE PAIVA Milo", role:"eleve"},
+  {name:"DE SOUSA FRANCISCO Luana", role:"eleve"},
+  {name:"DE WEVER Izu", role:"eleve"},
+  {name:"DEBONO Diana", role:"eleve"},
+  {name:"DEDIEU Axel", role:"eleve"},
+  {name:"DEDIGON Kamil", role:"eleve"},
+  {name:"DEFFORGE-BENTO Eva", role:"eleve"},
+  {name:"DEFOSSE Nohlan", role:"eleve"},
+  {name:"DEL PUERTO Lucas", role:"eleve"},
+  {name:"DELCHIER BERNUSSOU Martin", role:"eleve"},
+  {name:"DELCOURT Anna", role:"eleve"},
+  {name:"DELCROIX Carl", role:"eleve"},
+  {name:"DEMBELE Ibrahima", role:"eleve"},
+  {name:"DENEUFCHATEL Zoe", role:"eleve"},
+  {name:"DEROO CHAUVIN Eponine", role:"eleve"},
+  {name:"DEROUACH Adam", role:"eleve"},
+  {name:"DESAUBLIAUX Raphael", role:"eleve"},
+  {name:"DESNOE Capucine", role:"eleve"},
+  {name:"DESOEUVRE Yuna", role:"eleve"},
+  {name:"DEYMIE Zaynab", role:"eleve"},
+  {name:"DIALLO Alexis", role:"eleve"},
+  {name:"DIARRA Assa", role:"eleve"},
+  {name:"DIAS AFONSO Alessio", role:"eleve"},
+  {name:"DIATTA Alyssia", role:"eleve"},
+  // IMAGE 14
+  {name:"DIEDHIOU Evane", role:"eleve"},
+  {name:"DINGHAT Marc-Emmanuel", role:"eleve"},
+  {name:"DION-GOKAN Yara-Janice", role:"eleve"},
+  {name:"DIONE Zaza Fatou", role:"eleve"},
+  {name:"DIQUERO Elouan", role:"eleve"},
+  {name:"DJENADI Hanna", role:"eleve"},
+  {name:"DO NASCIMENTO Margaux", role:"eleve"},
+  {name:"DO NASCIMENTO Raphaël", role:"eleve"},
+  {name:"DO VALLE-TRABY Olivier", role:"eleve"},
+  {name:"DOLMIN-DELBECQUE Taïss", role:"eleve"},
+  {name:"DORANGE-PATTORET Camille", role:"eleve"},
+  {name:"DOS SANTOS DE AMORIM Maximilien", role:"eleve"},
+  {name:"DOS SANTOS MATOS LABOUTE Diego", role:"eleve"},
+  {name:"DOUMENG TO Ayrton", role:"eleve"},
+  {name:"DOURLIACH Gabriel", role:"eleve"},
+  {name:"DRIDI Aksel", role:"eleve"},
+  {name:"DRYE Arthur", role:"eleve"},
+  {name:"DUBIGNY Bastien", role:"eleve"},
+  {name:"DUBOCQ Eden", role:"eleve"},
+  {name:"DUBOCQ Marlon", role:"eleve"},
+  {name:"DUBOSCQ Titouan", role:"eleve"},
+  {name:"DUC ROIDOT Alexis", role:"eleve"},
+  {name:"DUCROT COUSIN Antoine", role:"eleve"},
+  {name:"DUGAND Alyona", role:"eleve"},
+  {name:"DUJARDIN Maxime", role:"eleve"},
+  {name:"DUPONT Luna", role:"eleve"},
+  {name:"DUPUIS Clément", role:"eleve"},
+  {name:"DURAND ALEXANDRE", role:"enseignant", sub:"Technologie"},
+  {name:"ECOLIVET Ambre", role:"eleve"},
+  {name:"EID Aya", role:"eleve"},
+  {name:"EL FADILI Saifeddine", role:"eleve"},
+  {name:"EL GHERIYESSE Alaa", role:"eleve"},
+  {name:"EL HAJIBI Marwa", role:"eleve"},
+  {name:"ELIO Inaya", role:"eleve"},
+  {name:"ERISMANN Mathilde", role:"eleve"},
+  {name:"ESKIL Timothe", role:"eleve"},
+  {name:"ETOUNDI MINKONGO Sylvia", role:"eleve"},
+  {name:"EYROLLE Sasha", role:"eleve"},
+  {name:"FADLI Aliya", role:"eleve"},
+  {name:"FAKWA Gabriel", role:"eleve"},
+  {name:"FALL Mouhamed", role:"eleve"},
+  {name:"FAMIBELLE Luc", role:"eleve"},
+  {name:"FASSAMI Ange Yasmine", role:"eleve"},
+  {name:"FAURE Arthur", role:"eleve"},
+  {name:"FAURE Paul", role:"eleve"},
+  {name:"FAUVEL BASTO Kylian", role:"eleve"},
+  {name:"FERIAUD Gabin", role:"eleve"},
+  {name:"FERIAUD Louise", role:"eleve"},
+  {name:"FERNANDES SIMAO Rafael", role:"eleve"},
+  {name:"FERNANDEZ FRAIOLI Ava", role:"eleve"},
+  // IMAGE 13
+  {name:"FERRE Maxime", role:"eleve"},
+  {name:"FERRON Clément", role:"eleve"},
+  {name:"FERSADOU Mehdi", role:"eleve"},
+  {name:"FEYT Guillaume", role:"eleve"},
+  {name:"FILLIAS Gaspard", role:"eleve"},
+  {name:"FILLIAS Salomé", role:"eleve"},
+  {name:"Flichy Anne", role:"personnel", sub:"Personnels M."},
+  {name:"FLOREA Daniel", role:"eleve"},
+  {name:"FLUHR Alexandre", role:"eleve"},
+  {name:"FOGELGESANG Anka", role:"eleve"},
+  {name:"FORMOSO MONTENEGRO Samuel", role:"eleve"},
+  {name:"FORT Arthur", role:"eleve"},
+  {name:"FORTIER NICOLAS Johanne", role:"eleve"},
+  {name:"FOURRIER Augustin", role:"eleve"},
+  {name:"FRANCHITTI Matis", role:"eleve"},
+  {name:"FRANCOIS Nolan", role:"eleve"},
+  {name:"FRENEL Jean-Naël", role:"eleve"},
+  {name:"FRUIT Manon", role:"eleve"},
+  {name:"GAILLIOT Sidonie", role:"eleve"},
+  {name:"GALAN JORDACHI Elody", role:"eleve"},
+  {name:"GAMEIRO Ana", role:"eleve"},
+  {name:"GARAMBOIS Erine", role:"eleve"},
+  {name:"GARCIA NOIRET Camille", role:"eleve"},
+  {name:"GARCIA NOIRET Marion", role:"eleve"},
+  {name:"GAUDIN Julia", role:"eleve"},
+  {name:"GAUTHIER Leïla", role:"eleve"},
+  {name:"GAZI Anne-Melis", role:"eleve"},
+  {name:"GEMAYEL SONIA", role:"enseignant", sub:"Arts Plastiques"},
+  {name:"GENILLER Héloïse", role:"eleve"},
+  {name:"GENIN Bastien", role:"eleve"},
+  {name:"GENTIL Louis", role:"eleve"},
+  {name:"GERMAIN-GUILLOTIN Maëlie", role:"eleve"},
+  {name:"GHARBI Ayoub", role:"eleve"},
+  {name:"GIRARD Alexia", role:"eleve"},
+  {name:"GNEGBO Elisé", role:"eleve"},
+  {name:"GOBLET Eliott", role:"eleve"},
+  {name:"GOBLET Juliette", role:"eleve"},
+  {name:"GODARD Noah", role:"eleve"},
+  {name:"GODIN Eva", role:"eleve"},
+  {name:"GODIN Thomas", role:"eleve"},
+  {name:"GOGE Nina", role:"eleve"},
+  {name:"GOMIS Béatrice", role:"eleve"},
+  {name:"GOMIS Namoan", role:"eleve"},
+  {name:"GOMIS Soan", role:"eleve"},
+  {name:"GONZALEZ Pauline", role:"eleve"},
+  {name:"GONZALEZ Victor", role:"eleve"},
+  {name:"GONÇALVES Rafael", role:"eleve"},
+  {name:"GOSSELIN Lucas", role:"eleve"},
+  {name:"GOUPIL Clémence", role:"eleve"},
+  {name:"GRALL Tiphaine", role:"eleve"},
+  // IMAGE 12
+  {name:"GRANIER Louis", role:"eleve"},
+  {name:"GRAS DUMATS Théodore", role:"eleve"},
+  {name:"GRATACAP Zoe", role:"eleve"},
+  {name:"GREGO Maïla", role:"eleve"},
+  {name:"GRILLAUD Camille", role:"eleve"},
+  {name:"GROULD Aaron", role:"eleve"},
+  {name:"GRUEL Andrea", role:"eleve"},
+  {name:"GUEGUIN Oceane", role:"eleve"},
+  {name:"GUERIN ANAIS", role:"enseignant"},
+  {name:"GUERIN Mathis", role:"eleve"},
+  {name:"GUESSOUM Rania", role:"eleve"},
+  {name:"GUICHETEAU Linda", role:"eleve"},
+  {name:"GUIDEZ Léna", role:"eleve"},
+  {name:"GUILLERMO GALLET Anna", role:"eleve"},
+  {name:"GUILLOTIN Zoé", role:"eleve"},
+  {name:"GUILLOU Gabrielle", role:"eleve"},
+  {name:"GUILLOUL Yahya", role:"eleve"},
+  {name:"GUIPPE RULIER Lola", role:"eleve"},
+  {name:"GUTU Denis", role:"eleve"},
+  {name:"GUTU Vlad", role:"eleve"},
+  {name:"GUYOT-MORVAN Nine", role:"eleve"},
+  {name:"GUEDES Sasha", role:"eleve"},
+  {name:"HACHHACH Lila", role:"eleve"},
+  {name:"HADDADOU Sem", role:"eleve"},
+  {name:"HAISEERJIANG Erufan", role:"eleve"},
+  {name:"HAISSOUS Kenz", role:"eleve"},
+  {name:"HAMANT Baptiste", role:"eleve"},
+  {name:"HAMANT Paul", role:"eleve"},
+  {name:"HAMANT SEBASTIEN", role:"enseignant", sub:"Éducation Phy."},
+  {name:"HASSANI Neyla", role:"eleve"},
+  {name:"HAUQUEL BUDNIAK Morgane", role:"eleve"},
+  {name:"HECHO Melvyn", role:"eleve"},
+  {name:"HEDAN Tito", role:"eleve"},
+  {name:"HELIP Théo", role:"eleve"},
+  {name:"HELM-SMITH Antoine", role:"eleve"},
+  {name:"HENTSCH Eva", role:"eleve"},
+  {name:"HEQUET PINGUET Meline", role:"eleve"},
+  {name:"HERAULT LUCAS Robin", role:"eleve"},
+  {name:"HERVE DU PENHOAT Emma", role:"eleve"},
+  {name:"HOLL Anthony", role:"eleve"},
+  {name:"HOPPELER BUDNIAK Emmanuel", role:"eleve"},
+  {name:"HOSNI Mohamed Melek", role:"eleve"},
+  {name:"HOURRA Aymane", role:"eleve"},
+  {name:"HUARD Baptiste", role:"eleve"},
+  {name:"HUARD Gabriel", role:"eleve"},
+  {name:"HULOT Leonie", role:"eleve"},
+  {name:"IACUBOI Andreea", role:"eleve"},
+  {name:"IMBERT Amaury", role:"eleve"},
+  {name:"IMBERT Luc", role:"eleve"},
+  {name:"JACOB Louise", role:"eleve"},
+  // IMAGE 11
+  {name:"JACQ Corentin", role:"eleve"},
+  {name:"JACQUEMART Anna", role:"eleve"},
+  {name:"JACQUEMART Lisa", role:"eleve"},
+  {name:"JAHANDIER Axel", role:"eleve"},
+  {name:"JAKIC Effie", role:"eleve"},
+  {name:"JAMBERT Alexie", role:"eleve"},
+  {name:"JAMBEZ Manon", role:"eleve"},
+  {name:"JAMELIN Hugo", role:"eleve"},
+  {name:"JANNETON Colin", role:"eleve"},
+  {name:"JANSSEN Arthur", role:"eleve"},
+  {name:"JANTZEN Rose", role:"eleve"},
+  {name:"JAOUADI Sirine", role:"eleve"},
+  {name:"Jardin Olivier", role:"personnel", sub:"Personnels A."},
+  {name:"JAUZEIN Adrien", role:"eleve"},
+  {name:"JAUZEIN Margaux", role:"eleve"},
+  {name:"JEAN-BAPTISTE ALANA", role:"enseignant", sub:"Documentation"},
+  {name:"JEEWOOLALL Teeyah", role:"eleve"},
+  {name:"JERSIER Amani", role:"eleve"},
+  {name:"JOMBART Jeanne", role:"eleve"},
+  {name:"JOSEPH Dachnaïka", role:"eleve"},
+  {name:"JOSEPH Loudjina", role:"eleve"},
+  {name:"JOURDANT Charleen", role:"eleve"},
+  {name:"Julliard Momon", role:"personnel", sub:"Personnels A."},
+  {name:"KAKAS Ilyes", role:"eleve"},
+  {name:"KALFAT Monia", role:"eleve"},
+  {name:"KALONJI MULENDA ESANGU Beryl", role:"eleve"},
+  {name:"KALUIARACHCHI GE Emma", role:"eleve"},
+  {name:"KAMELAN Manon", role:"eleve"},
+  {name:"KAMELAN Melia", role:"eleve"},
+  {name:"KAPEA YOUMBI Mathys", role:"eleve"},
+  {name:"KARTHEEPAN Anshika", role:"eleve"},
+  {name:"KEBSA Rayan", role:"eleve"},
+  {name:"KEISSER GOFFAUX Mia", role:"eleve"},
+  {name:"KHALDI Imed", role:"eleve"},
+  {name:"KHEDACHI Djouwayriya", role:"eleve"},
+  {name:"KIEFE Joy", role:"eleve"},
+  {name:"KIRCHER Manon", role:"eleve"},
+  {name:"KIRUBAKARAN Avanthika", role:"eleve"},
+  {name:"KISS-COURAGEUX Angelina", role:"eleve"},
+  {name:"KITOROGOFF Noa", role:"eleve"},
+  {name:"KNOCKAERT Joseph", role:"eleve"},
+  {name:"KOFFI Axelle", role:"eleve"},
+  {name:"KOFFI Makissi Anne Emmanuelle", role:"eleve"},
+  {name:"KOLBECHER Léonie", role:"eleve"},
+  {name:"KONE Sacha", role:"eleve"},
+  {name:"KOUATI Séphora", role:"eleve"},
+  {name:"KRUKOFF Sarah", role:"eleve"},
+  {name:"KUCHYNSKA Stefania", role:"eleve"},
+  {name:"Labeau Heidi", role:"personnel", sub:"Direction"},
+  {name:"LABOUREY Marwan", role:"eleve"},
+  // IMAGE 10
+  {name:"LACASTAIGNERATTE Gregoire", role:"eleve"},
+  {name:"LACHAISE Alexis", role:"eleve"},
+  {name:"LACROIX Jeanne", role:"eleve"},
+  {name:"LADET Penelope", role:"eleve"},
+  {name:"LAFITTE Mathieu", role:"eleve"},
+  {name:"LAGRANGE PROUST Maxence", role:"eleve"},
+  {name:"LAINE BRUNO Liv", role:"eleve"},
+  {name:"LAIZE Lucas", role:"eleve"},
+  {name:"LAMENDIN Raphaël", role:"eleve"},
+  {name:"LANDU Vainqueur", role:"eleve"},
+  {name:"LANEL Evan", role:"eleve"},
+  {name:"LANGLOIS Enzo", role:"eleve"},
+  {name:"LAPERDRIX Manon", role:"eleve"},
+  {name:"LARDENOIS Clemence", role:"eleve"},
+  {name:"LARY Evan", role:"eleve"},
+  {name:"Laulier Sandrine", role:"personnel", sub:"Personnels A."},
+  {name:"LAURIE Alicia", role:"eleve"},
+  {name:"LAUTENBERG LOURENCO Manon", role:"eleve"},
+  {name:"LAUTENBERG LOURENCO Nathan", role:"eleve"},
+  {name:"LAVILLARD Keedi-Kossy", role:"eleve"},
+  {name:"LAZARD GOURDON Alice", role:"eleve"},
+  {name:"LE BARS Chiara", role:"eleve"},
+  {name:"LE BRAS Titouan", role:"eleve"},
+  {name:"LE FLOHIC Zoé", role:"eleve"},
+  {name:"LE GOURRIEREC Erwan", role:"eleve"},
+  {name:"LE RAT Elias", role:"eleve"},
+  {name:"LE ROUX Elouane", role:"eleve"},
+  {name:"LEBLOIS Valentin", role:"eleve"},
+  {name:"LEBON Romane", role:"eleve"},
+  {name:"LEBOUC Lea", role:"eleve"},
+  {name:"LEBRET Nora", role:"eleve"},
+  {name:"LEBRETON-BOULLENGER Chloe", role:"eleve"},
+  {name:"LECERF-REZAK AURELIE", role:"enseignant", sub:"Accompagnement"},
+  {name:"LECONTE Elsa", role:"eleve"},
+  {name:"LECOT Cameron", role:"eleve"},
+  {name:"LEGANGNEUX PERUSSET Nelson", role:"eleve"},
+  {name:"LEMBA Nour", role:"eleve"},
+  {name:"LENOIR Charlotte", role:"eleve"},
+  {name:"LEPINE Stan", role:"eleve"},
+  {name:"LEPINGLE Louison", role:"eleve"},
+  {name:"LEPIRA PANZO Benilson", role:"eleve"},
+  {name:"LEPRINCE Gabriel", role:"eleve"},
+  {name:"LEROUX DENBY WILKES Olivia", role:"eleve"},
+  {name:"LESCOT Cynthia", role:"eleve"},
+  {name:"LESCROART Chloe", role:"eleve"},
+  {name:"LESSEUR Grégoire", role:"eleve"},
+  {name:"LETHUILLIER Nils", role:"eleve"},
+  {name:"LEVESQUE Raphaël", role:"eleve"},
+  {name:"LEVRON GARDINER Romain", role:"eleve"},
+  {name:"LHERMITE Kelly", role:"eleve"},
+  // IMAGE 9
+  {name:"LIENDO HERNANDEZ Santiago", role:"eleve"},
+  {name:"Lillouche Fadhila", role:"personnel", sub:"Personnels M."},
+  {name:"LILLOUCHE Issa", role:"eleve"},
+  {name:"LIMA DE JESUS Mayara", role:"eleve"},
+  {name:"LIMA DE JESUS Taïna", role:"eleve"},
+  {name:"LLADO Victor", role:"eleve"},
+  {name:"LOGEAIS LEPAGE Albane", role:"eleve"},
+  {name:"LORIDON Owen", role:"eleve"},
+  {name:"LOUCHET Timothée", role:"eleve"},
+  {name:"LOUIMA Raoul", role:"eleve"},
+  {name:"LOUIMA Theodort", role:"eleve"},
+  {name:"LOUNIS Kamelia", role:"eleve"},
+  {name:"LOUVET Jade", role:"eleve"},
+  {name:"LOUVET Kéo", role:"eleve"},
+  {name:"LUPO Alexandre", role:"eleve"},
+  {name:"LUU TRONG-LE", role:"enseignant", sub:"Anglais LV1"},
+  {name:"MACAUX Ethan", role:"eleve"},
+  {name:"MAGNANI Claudio", role:"eleve"},
+  {name:"MAIGA Maya", role:"eleve"},
+  {name:"MAILLARD Milo", role:"eleve"},
+  {name:"MAILLET Antoine", role:"eleve"},
+  {name:"MAIRAND Esteban", role:"eleve"},
+  {name:"MAISURADZE Louka", role:"eleve"},
+  {name:"MALAVAL Janelle", role:"eleve"},
+  {name:"MALIGE Sacha", role:"eleve"},
+  {name:"MALLIARD Agathe", role:"eleve"},
+  {name:"MALLIARD Ambroise", role:"eleve"},
+  {name:"MAMECHE CHAINEZE", role:"personnel", sub:"Assistant d'Ed."},
+  {name:"MANACH Lisette", role:"eleve"},
+  {name:"MANCHOUR-PRETOT Jannah", role:"eleve"},
+  {name:"MANDEVILLE AUDREY", role:"personnel", sub:"Éducation"},
+  {name:"MANSOUR Jana", role:"eleve"},
+  {name:"MANSOURIA Noham", role:"eleve"},
+  {name:"MARECHAL Manon", role:"eleve"},
+  {name:"MARGOTTIN Guillaume", role:"eleve"},
+  {name:"MARGUERIT Gabriel", role:"eleve"},
+  {name:"MARO Thibault", role:"eleve"},
+  {name:"MARTIN Lou", role:"eleve"},
+  {name:"MARTIN Luka", role:"eleve"},
+  {name:"MARTINI Suzon", role:"eleve"},
+  {name:"MATENS Samuel", role:"eleve"},
+  {name:"MAUCARRE Bérenice", role:"eleve"},
+  {name:"MAUCHAUSSAT Fedi", role:"eleve"},
+  {name:"MAUGUY Hugo", role:"eleve"},
+  {name:"MAURICE Kyerne", role:"eleve"},
+  {name:"MAURICE Kérane", role:"eleve"},
+  {name:"MAURIN Kim", role:"eleve"},
+  {name:"MAVATA Annette", role:"eleve"},
+  {name:"MAVOUNGOU PANZOU Lyam", role:"eleve"},
+  {name:"MAZET-DELAVAULT Sacha", role:"eleve"},
+  // IMAGE 8
+  {name:"MBARI Younes", role:"eleve"},
+  {name:"MBATCHOU TIENGA Florent", role:"eleve"},
+  {name:"MEKESSER SYLVIE", role:"personnel", sub:"Psychologue"},
+  {name:"MELKI Paul", role:"eleve"},
+  {name:"MELLADO Naïm", role:"eleve"},
+  {name:"MENAGER Ilyan", role:"eleve"},
+  {name:"MENDY GOMIS Juani Josian", role:"eleve"},
+  {name:"MENET Louise", role:"eleve"},
+  {name:"MERCIER Alexandre", role:"eleve"},
+  {name:"MERCIER Clémence", role:"eleve"},
+  {name:"MERELLE NICOLLE Louan", role:"eleve"},
+  {name:"MERIC Sacha", role:"eleve"},
+  {name:"METIEKAM KAMWA Divine Gabriela", role:"eleve"},
+  {name:"MEUNIER CEDENO Adrian", role:"eleve"},
+  {name:"MICHEL D'ANNOVILLE Adrien", role:"eleve"},
+  {name:"MIKOLAJCZAK Hugo", role:"eleve"},
+  {name:"MILDREDE Nina", role:"eleve"},
+  {name:"MILLET Nicolas", role:"eleve"},
+  {name:"MIRAOUI SRINIVASSAN Adem", role:"eleve"},
+  {name:"MISZUTEN Roman", role:"eleve"},
+  {name:"MODIRCA Francesca", role:"eleve"},
+  {name:"MOISE Nollan", role:"eleve"},
+  {name:"MOKHTARI Naël Nour", role:"eleve"},
+  {name:"MONROC Júna", role:"eleve"},
+  {name:"MOOTOOSAMY-CORRALES Nina", role:"eleve"},
+  {name:"MOREAU Eloan", role:"eleve"},
+  {name:"MOREL Colombe", role:"eleve"},
+  {name:"MORFIN Axel", role:"eleve"},
+  {name:"MORIN Samuel", role:"eleve"},
+  {name:"MOROZOFF Charles", role:"eleve"},
+  {name:"MORTAGUA Matheo", role:"eleve"},
+  {name:"MORTAIN Eva", role:"eleve"},
+  {name:"MOSENGO Rosie", role:"eleve"},
+  {name:"MOUHOUTAROU Andilath", role:"eleve"},
+  {name:"MOUROUVIN Hector", role:"eleve"},
+  {name:"MPIANGA Zackan", role:"eleve"},
+  {name:"MUHADER Ghassan", role:"eleve"},
+  {name:"MUHADER Razen", role:"eleve"},
+  {name:"MUKURI EPOKO Glenn", role:"eleve"},
+  {name:"MULOPO Loïr", role:"eleve"},
+  {name:"MUZINGA-PORTEUX Marilou-Christine", role:"eleve"},
+  {name:"N'DIRI Loic", role:"eleve"},
+  {name:"NABOULSI Imrane", role:"eleve"},
+  {name:"NAIT MOULOUD Axel", role:"eleve"},
+  {name:"NAKKOUR Christie", role:"eleve"},
+  {name:"NASRADDINE Mariel", role:"eleve"},
+  {name:"NDOULI-NGOUNDOU Enzo", role:"eleve"},
+  {name:"NEANT Abel", role:"eleve"},
+  {name:"NEGHIZ Anaïs", role:"eleve"},
+  {name:"NEHAR Lucie", role:"eleve"},
+  // IMAGE 7
+  {name:"NEMOND-TRAN Théo", role:"eleve"},
+  {name:"NGANGA Keryann", role:"eleve"},
+  {name:"NGO LIKOUND Gabriella", role:"eleve"},
+  {name:"NGOSSO ELLONG Mirela", role:"eleve"},
+  {name:"NGUYEN Adrien", role:"eleve"},
+  {name:"NIAKATE Coumba", role:"eleve"},
+  {name:"NIRO Amandine", role:"eleve"},
+  {name:"NORMAND TUPIN Sacha", role:"eleve"},
+  {name:"NOUAR LEMAIRE Yanis", role:"eleve"},
+  {name:"NUNES DE ARAÙJO Lucie", role:"eleve"},
+  {name:"ODEINDE Olufemi", role:"eleve"},
+  {name:"OMER Sybille", role:"eleve"},
+  {name:"OMNES Eilidh", role:"eleve"},
+  {name:"ONGUELLE Adriella", role:"eleve"},
+  {name:"ORAIN Romy", role:"eleve"},
+  {name:"ORENES-LERMA Gauthier", role:"eleve"},
+  {name:"OSMAN YVON Charlotte", role:"eleve"},
+  {name:"OSMAN YVON Sophie", role:"eleve"},
+  {name:"OSMANI Tariq", role:"eleve"},
+  {name:"OSOKOGU Shawn", role:"eleve"},
+  {name:"OUDOT SABLON Anaëlle", role:"eleve"},
+  {name:"OUDOT SABLON Charlotte", role:"eleve"},
+  {name:"OUNINI Anaelle", role:"eleve"},
+  {name:"PAEPEGAEY Madeleine", role:"eleve"},
+  {name:"PALMER Emma", role:"eleve"},
+  {name:"PALMER Lina", role:"eleve"},
+  {name:"PARAMES PERRIN Alexis", role:"eleve"},
+  {name:"PARENT Henri", role:"eleve"},
+  {name:"PARROT Maxence", role:"eleve"},
+  {name:"PAVIS Gabin", role:"eleve"},
+  {name:"PEDEBERNADE LAURE", role:"enseignant", sub:"Sciences de la vie"},
+  {name:"PELE Maelia", role:"eleve"},
+  {name:"PELLERIN Gabriel", role:"eleve"},
+  {name:"PELLERIN Georges", role:"eleve"},
+  {name:"PENTEL Baptiste", role:"eleve"},
+  {name:"PERCHE Samuel", role:"eleve"},
+  {name:"PERCHE WINTENBERGER Maeva", role:"eleve"},
+  {name:"PEREIRA VENTURA Tiago", role:"eleve"},
+  {name:"PERREIRA TODESCO Agnia", role:"eleve"},
+  {name:"PERREIRA TODESCO Svetlana", role:"eleve"},
+  {name:"PERTHUIS Nathan", role:"eleve"},
+  {name:"PEUCHAUD Juliette", role:"eleve"},
+  {name:"PHILBERT Armand", role:"eleve"},
+  {name:"PICHON Elsa", role:"eleve"},
+  {name:"PICHON Iris", role:"eleve"},
+  {name:"PICHOT Anaïs", role:"eleve"},
+  {name:"PIDUCH Sofia", role:"eleve"},
+  {name:"PIED Anae", role:"eleve"},
+  {name:"PIERRE Leni", role:"eleve"},
+  {name:"PIETRIN Victoire", role:"eleve"},
+  // IMAGE 6
+  {name:"PIGEAU Raphaël", role:"eleve"},
+  {name:"PINA MARTINS Léo", role:"eleve"},
+  {name:"PINARD Lily-Ann", role:"eleve"},
+  {name:"PINILLA Henri", role:"eleve"},
+  {name:"PINON Benjamin", role:"eleve"},
+  {name:"PLOYART Alice", role:"eleve"},
+  {name:"POITRENAUD Enzo", role:"eleve"},
+  {name:"POULAIN Charlie", role:"eleve"},
+  {name:"POUSSARD Maël", role:"eleve"},
+  {name:"POVEDA Makar", role:"eleve"},
+  {name:"POZAR Milan", role:"eleve"},
+  {name:"PRUDENT Manon", role:"eleve"},
+  {name:"PRUNIER Chloé", role:"eleve"},
+  {name:"PRUVOST Eliott", role:"eleve"},
+  {name:"PY Aurélien", role:"eleve"},
+  {name:"PERE Camille", role:"eleve"},
+  {name:"PERE Sophie", role:"eleve"},
+  {name:"QUACH Denis", role:"eleve"},
+  {name:"QUERNEL Joyce", role:"eleve"},
+  {name:"QUITERIO Eva", role:"eleve"},
+  {name:"QUEMENEUR Jules", role:"eleve"},
+  {name:"RAINAUD DA SILVA Lina", role:"eleve"},
+  {name:"RAJKUMAR Hiresh", role:"eleve"},
+  {name:"RAMAROSON Kanto", role:"eleve"},
+  {name:"RAMFUL Faith", role:"eleve"},
+  {name:"RAMOS NETO Gabriela", role:"eleve"},
+  {name:"RANDRIAMANAN TSOA Mathias", role:"eleve"},
+  {name:"RAYK Ilyas", role:"eleve"},
+  {name:"RAYK Inas", role:"eleve"},
+  {name:"RAYK Yasmine", role:"eleve"},
+  {name:"RAZGOEV Anna-Maria", role:"eleve"},
+  {name:"RAZIER Lisa", role:"eleve"},
+  {name:"REGISTRE Lovely", role:"eleve"},
+  {name:"REGISTRE Sandra", role:"eleve"},
+  {name:"REIZ Félix", role:"eleve"},
+  {name:"RENOUF Quentyn", role:"eleve"},
+  {name:"REYNIER Lucie", role:"eleve"},
+  {name:"RICCI Massimio", role:"eleve"},
+  {name:"RICHARD Jean-Baptiste", role:"eleve"},
+  {name:"RIGAUD-COLONNA Corne-Andre", role:"eleve"},
+  {name:"Rimane Wendy", role:"personnel", sub:"Personnels A."},
+  {name:"RIPOCHE Valérian", role:"eleve"},
+  {name:"RISSER Coleen", role:"eleve"},
+  {name:"RIVIERE Eden", role:"eleve"},
+  {name:"RIVIERE Eliott", role:"eleve"},
+  {name:"RIVIERE-FAURE Nina", role:"eleve"},
+  {name:"ROBIN Antoine", role:"eleve"},
+  {name:"ROBIN Timothee", role:"eleve"},
+  {name:"RODICI Cosmina", role:"eleve"},
+  {name:"ROGER Balthazar", role:"eleve"},
+  // IMAGE 5
+  {name:"ROLLAND Aaron", role:"eleve"},
+  {name:"ROMANELLI RANTZ Leo", role:"eleve"},
+  {name:"ROMERO CARRASCO MADELAINE Noemie", role:"eleve"},
+  {name:"ROSALVA Grénael", role:"eleve"},
+  {name:"ROUMAZEILLE MAISTRET Axelle", role:"eleve"},
+  {name:"ROUSTIT Soline", role:"eleve"},
+  {name:"ROUTIER Anaïs", role:"eleve"},
+  {name:"ROYER Maëlle", role:"eleve"},
+  {name:"ROYER Méline", role:"eleve"},
+  {name:"ROZAIRE Florian", role:"eleve"},
+  {name:"ROZAIRE Jules", role:"eleve"},
+  {name:"RUFFIO MERIEUX James", role:"eleve"},
+  {name:"RUILLER Gabin", role:"eleve"},
+  {name:"SABATINO Lisa", role:"eleve"},
+  {name:"SABIE Alexis", role:"eleve"},
+  {name:"SABIE Tristan", role:"eleve"},
+  {name:"SACHON Eline", role:"eleve"},
+  {name:"SAHRAOUI Chaïma", role:"eleve"},
+  {name:"SAINT-PAUL CATHERINE", role:"enseignant", sub:"Anglais LV1"},
+  {name:"SALA Maëlys", role:"eleve"},
+  {name:"SALAH Aksil", role:"eleve"},
+  {name:"SALMI Lina", role:"eleve"},
+  {name:"SALOU Alan", role:"eleve"},
+  {name:"SAM Issa", role:"eleve"},
+  {name:"SAMMUT Ian", role:"eleve"},
+  {name:"SAMPAIO Zoé", role:"eleve"},
+  {name:"SANCHEZ Louis", role:"eleve"},
+  {name:"SANIAL GONZALEZ Chloé", role:"eleve"},
+  {name:"SANO Ettien Enzo", role:"eleve"},
+  {name:"SAPAROV Alexandre", role:"eleve"},
+  {name:"SARCY BOURDET Coline", role:"eleve"},
+  {name:"SARDA Ines", role:"eleve"},
+  {name:"SARDON Anna", role:"eleve"},
+  {name:"SARR Aminata", role:"eleve"},
+  {name:"SAURON Antoine", role:"eleve"},
+  {name:"SAURY Maxime", role:"eleve"},
+  {name:"SAUSSEREAU Mila", role:"eleve"},
+  {name:"SAVY Kynaël", role:"eleve"},
+  {name:"SCALVINI GABEN Côme", role:"eleve"},
+  {name:"SCHEURING LAMOTTE Thomas", role:"eleve"},
+  {name:"SCHMITT LAURENT", role:"enseignant", sub:"Enseignement"},
+  {name:"SEBIANE Rania", role:"eleve"},
+  {name:"SEBIANE Yousra", role:"eleve"},
+  {name:"SEKULOVIC Sasha", role:"eleve"},
+  {name:"SEMER Louis", role:"eleve"},
+  {name:"SENEGAS Quentin", role:"eleve"},
+  {name:"SENNEVILLE Ambre", role:"eleve"},
+  {name:"SEREY DETRAUX Arthur", role:"eleve"},
+  {name:"SEROT Adèle", role:"eleve"},
+  {name:"SEROT Amelie", role:"eleve"},
+  // IMAGE 4
+  {name:"SERPELLONI Nahel", role:"eleve"},
+  {name:"SHAYKHET Mark", role:"eleve"},
+  {name:"SIFFERT Mathilde", role:"eleve"},
+  {name:"SIMONNET Armaury", role:"eleve"},
+  {name:"SINGH Abhi", role:"eleve"},
+  {name:"SINGH Anshu", role:"eleve"},
+  {name:"SINKO-BI-ROUSSEAU Dan", role:"eleve"},
+  {name:"SITBON Leo", role:"eleve"},
+  {name:"SIVARAJA Dylan", role:"eleve"},
+  {name:"SLAWNY Juliette", role:"eleve"},
+  {name:"SLIMANI Malik", role:"eleve"},
+  {name:"SLIVINSKA Anna-Maïra", role:"eleve"},
+  {name:"SOIMOSAN William", role:"eleve"},
+  {name:"SOUFFANE Raphael", role:"eleve"},
+  {name:"SOUMAILA COMBO Tayron", role:"eleve"},
+  {name:"SOW Habib", role:"eleve"},
+  {name:"SPERANZA Margot", role:"eleve"},
+  {name:"STANEK Aurelien", role:"eleve"},
+  {name:"STANISLAWIAK Alix", role:"eleve"},
+  {name:"STANISLAWIAK Claire", role:"eleve"},
+  {name:"STIEVENART Aurore", role:"eleve"},
+  {name:"SULPICE Kirsteen", role:"eleve"},
+  {name:"SY Mady", role:"eleve"},
+  {name:"SY Zainab", role:"eleve"},
+  {name:"SYULEYMANOV Idil", role:"eleve"},
+  {name:"SYULEYMANOV Nilay", role:"eleve"},
+  {name:"TABORE Manon", role:"eleve"},
+  {name:"TAJI Abderrahmane", role:"eleve"},
+  {name:"TAKFAOUI ABDEL-ILAH", role:"enseignant"},
+  {name:"TAMOUM Zakiy", role:"eleve"},
+  {name:"TARDIVEL Apolline", role:"eleve"},
+  {name:"TARDIVEL Maxime", role:"eleve"},
+  {name:"TARDIVEL Victor", role:"eleve"},
+  {name:"TARIS Daniel", role:"eleve"},
+  {name:"TCHEPANVO KUEMO Bessy", role:"eleve"},
+  {name:"TCHEPANVO KUEMO Siha", role:"eleve"},
+  {name:"TEIXEIRA MACEDO Eva", role:"eleve"},
+  {name:"TELLIER Clara", role:"eleve"},
+  {name:"TERMEAU Adrien", role:"eleve"},
+  {name:"THELEME Maïwen", role:"eleve"},
+  {name:"THEVENOT Romain", role:"eleve"},
+  {name:"THEVIGNOT Lola", role:"eleve"},
+  {name:"THOMAS Rafael", role:"eleve"},
+  {name:"THOUVENOT Julie", role:"eleve"},
+  {name:"TOSET HUGUET Edouard", role:"eleve"},
+  {name:"TOURE Aminata", role:"eleve"},
+  {name:"TOURNEUX-CHARRON Jean", role:"eleve"},
+  {name:"TRASSARD Alban", role:"eleve"},
+  {name:"TRIFI Tamara", role:"eleve"},
+  {name:"TRIGOUST RICOLLEAU Tess", role:"eleve"},
+  // IMAGE 2-3
+  {name:"TRIOREAU Maxime", role:"eleve"},
+  {name:"TURKI SARRA", role:"enseignant", sub:"Français"},
+  {name:"TURLOT PICARD Emma", role:"eleve"},
+  {name:"URBAN ISABELLE", role:"enseignant", sub:"Anglais LV1"},
+  {name:"URIEN-BOHIC Martin", role:"eleve"},
+  {name:"VACHERESSE Abygaël", role:"eleve"},
+  {name:"VADBLED Juliette", role:"eleve"},
+  {name:"VADBLED Marcel", role:"eleve"},
+  {name:"VADIVALAKANTH AN Pinjan", role:"eleve"},
+  {name:"Val Flory Interne", role:"eleve"},
+  // IMAGE 1
+  {name:"VALADIER Manon", role:"eleve"},
+  {name:"VALDIVIA UCANAY Andiara", role:"eleve"},
+  {name:"VALDIVIA UCANAY Brianna", role:"eleve"},
+  {name:"VALENCE Louna", role:"eleve"},
+  {name:"VALLEJO Avetis", role:"eleve"},
+  {name:"VALLEJO Vahé", role:"eleve"},
+  {name:"VANDENBURIE SILVEIRA Valentin", role:"eleve"},
+  {name:"VDOVINA Alisa", role:"eleve"},
+  {name:"VEDEL Antonin", role:"eleve"},
+  {name:"VELA THOMAS Louis", role:"eleve"},
+  {name:"VERBRIGGHE Baptiste", role:"eleve"},
+  {name:"VERDIN Baptiste", role:"eleve"},
+  {name:"VERDIN Paul", role:"eleve"},
+  {name:"VERIN HOUPERT Elouan", role:"eleve"},
+  {name:"VIAL Louis", role:"eleve"},
+  {name:"VIAL Timothée", role:"eleve"},
+  {name:"VIARD Clement", role:"eleve"},
+  {name:"VICH CHARTON Rafael", role:"eleve"},
+  {name:"VICQ Tchapi", role:"eleve"},
+  {name:"Vie Scolaire Collège", role:"personnel"},
+  {name:"VIGNER JAQUET Ellie", role:"eleve"},
+  {name:"VIGNY Coraline", role:"eleve"},
+  {name:"VILMAY Arthur", role:"eleve"},
+  {name:"VISCONTI-NEMO Octave", role:"eleve"},
+  {name:"VITTRANT Gaspard", role:"eleve"},
+  {name:"VIVIER Anae", role:"eleve"},
+  {name:"WARLOP Hugo", role:"eleve"},
+  {name:"WEGENER Alexane", role:"eleve"},
+  {name:"WEI Leonard", role:"eleve"},
+  {name:"WEISS Noe", role:"eleve"},
+  {name:"WEISS Théo", role:"eleve"},
+  {name:"WOODWARD Joanna", role:"eleve"},
+  {name:"YAMEOGO Sean Ousmane Maël", role:"eleve"},
+  {name:"YAO Jean Kouadio", role:"eleve"},
+  {name:"YARHI Nael", role:"eleve"},
+  {name:"YOGARAJAH Prajina", role:"eleve"},
+  {name:"YOGARAJAH Prajith", role:"eleve"},
+  {name:"YOKSIMOVITCH Alexandre", role:"eleve"},
+  {name:"YOON Sophie", role:"eleve"},
+  {name:"YOUB Rayan", role:"eleve"},
+  {name:"ZA BI Gohi Saran Anaïs", role:"eleve"},
+  {name:"ZAGORODNIUC Amélie", role:"eleve"},
+  {name:"ZAMPICCOLI Théo", role:"eleve"},
+  {name:"ZAVTUR Mihail", role:"eleve"},
+  {name:"ZERAOUI Wassim", role:"eleve"},
+];
+
+const grid = document.getElementById('grid');
+const searchInput = document.getElementById('search');
+const countEl = document.getElementById('count');
+const filterBtns = document.querySelectorAll('.filter-btn');
+
+let currentFilter = 'all';
+
+function getInitials(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name[0].toUpperCase();
+}
+
+function roleLabel(role) {
+  if (role === 'enseignant') return 'Enseignant(e)';
+  if (role === 'personnel') return 'Personnel';
+  if (role === 'parent') return 'Parent';
+  return 'Élève';
+}
+
+function renderCards(list) {
+  grid.innerHTML = '';
+  if (list.length === 0) {
+    grid.innerHTML = `<div class="no-results"><div class="icon">🔍</div><p>Aucun résultat trouvé</p></div>`;
+    countEl.textContent = 0;
+    return;
+  }
+  countEl.textContent = list.length;
+  list.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="avatar ${p.role}">${getInitials(p.name)}</div>
+      <div class="name">${p.name}</div>
+      <span class="badge ${p.role}">${roleLabel(p.role)}</span>
+      ${p.sub ? `<div class="sub">${p.sub}</div>` : ''}
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function filter() {
+  const q = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  let result = people.filter(p => {
+    const n = p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const matchQ = n.includes(q);
+    const matchF = currentFilter === 'all' || p.role === currentFilter;
+    return matchQ && matchF;
+  });
+  renderCards(result);
+}
+
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    filter();
+  });
+});
+
+searchInput.addEventListener('input', filter);
+
+// Initial render
+filter();
+</script>
+</body>
+</html>
