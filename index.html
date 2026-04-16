@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; frame-src 'none';">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=()">
 <title>Annuaire Établissement</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -229,9 +233,23 @@
   .no-results p { font-size: 1.1rem; }
 
   .card.hidden { display: none; }
+
+  .privacy-banner {
+    background: rgba(249,115,22,0.1);
+    border-bottom: 1px solid var(--accent);
+    padding: 10px 32px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .privacy-banner strong { color: var(--accent); }
 </style>
 </head>
 <body>
+
+<div class="privacy-banner">
+  <strong>Accès restreint</strong> — Ce répertoire contient des données personnelles protégées. Toute copie, extraction ou diffusion non autorisée est interdite (RGPD / CNIL).
+</div>
 
 <header>
   <h1>Annuaire <span>École</span></h1>
@@ -1206,10 +1224,25 @@ function roleLabel(role) {
   return 'Élève';
 }
 
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function renderCards(list) {
-  grid.innerHTML = '';
+  while (grid.firstChild) grid.removeChild(grid.firstChild);
   if (list.length === 0) {
-    grid.innerHTML = `<div class="no-results"><div class="icon">🔍</div><p>Aucun résultat trouvé</p></div>`;
+    const noRes = document.createElement('div');
+    noRes.className = 'no-results';
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = '🔍';
+    const msg = document.createElement('p');
+    msg.textContent = 'Aucun résultat trouvé';
+    noRes.appendChild(icon);
+    noRes.appendChild(msg);
+    grid.appendChild(noRes);
     countEl.textContent = 0;
     return;
   }
@@ -1217,12 +1250,29 @@ function renderCards(list) {
   list.forEach(p => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `
-      <div class="avatar ${p.role}">${getInitials(p.name)}</div>
-      <div class="name">${p.name}</div>
-      <span class="badge ${p.role}">${roleLabel(p.role)}</span>
-      ${p.sub ? `<div class="sub">${p.sub}</div>` : ''}
-    `;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ' + escapeHTML(p.role);
+    avatar.textContent = getInitials(p.name);
+    card.appendChild(avatar);
+
+    const nameDiv = document.createElement('div');
+    nameDiv.className = 'name';
+    nameDiv.textContent = p.name;
+    card.appendChild(nameDiv);
+
+    const badge = document.createElement('span');
+    badge.className = 'badge ' + escapeHTML(p.role);
+    badge.textContent = roleLabel(p.role);
+    card.appendChild(badge);
+
+    if (p.sub) {
+      const sub = document.createElement('div');
+      sub.className = 'sub';
+      sub.textContent = p.sub;
+      card.appendChild(sub);
+    }
+
     grid.appendChild(card);
   });
 }
