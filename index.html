@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; img-src 'self'; upgrade-insecure-requests">
 <title>Annuaire Établissement</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -1209,7 +1210,16 @@ function roleLabel(role) {
 function renderCards(list) {
   grid.innerHTML = '';
   if (list.length === 0) {
-    grid.innerHTML = `<div class="no-results"><div class="icon">🔍</div><p>Aucun résultat trouvé</p></div>`;
+    const noRes = document.createElement('div');
+    noRes.className = 'no-results';
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = '\uD83D\uDD0D';
+    const msg = document.createElement('p');
+    msg.textContent = 'Aucun r\u00E9sultat trouv\u00E9';
+    noRes.appendChild(icon);
+    noRes.appendChild(msg);
+    grid.appendChild(noRes);
     countEl.textContent = 0;
     return;
   }
@@ -1217,12 +1227,30 @@ function renderCards(list) {
   list.forEach(p => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `
-      <div class="avatar ${p.role}">${getInitials(p.name)}</div>
-      <div class="name">${p.name}</div>
-      <span class="badge ${p.role}">${roleLabel(p.role)}</span>
-      ${p.sub ? `<div class="sub">${p.sub}</div>` : ''}
-    `;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ' + p.role;
+    avatar.textContent = getInitials(p.name);
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'name';
+    nameEl.textContent = p.name;
+
+    const badge = document.createElement('span');
+    badge.className = 'badge ' + p.role;
+    badge.textContent = roleLabel(p.role);
+
+    card.appendChild(avatar);
+    card.appendChild(nameEl);
+    card.appendChild(badge);
+
+    if (p.sub) {
+      const sub = document.createElement('div');
+      sub.className = 'sub';
+      sub.textContent = p.sub;
+      card.appendChild(sub);
+    }
+
     grid.appendChild(card);
   });
 }
