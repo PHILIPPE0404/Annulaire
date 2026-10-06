@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Annuaire Scolaire - Collège Louis Lumière</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Annuaire Scolaire — Collège Louis Lumière</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -20,217 +20,141 @@
               700: '#0369a1',
             }
           },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(8px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            }
+          },
           animation: {
-            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'bounce-short': 'bounce 0.5s ease-in-out 1',
+            'fade-in': 'fadeIn 0.25s ease-out forwards'
           }
         }
       }
     }
   </script>
-  <!-- FontAwesome for Icons -->
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .glassmorphism {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .glassmorphism-light {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(229, 231, 235, 0.8);
-    }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(156, 163, 175, 0.5);
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(107, 114, 128, 0.8);
-    }
+    .card-animate { animation: fadeIn 0.3s ease-out forwards; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100 light:bg-slate-50 light:text-slate-900 selection:bg-brand-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-brand-500 selection:text-white pb-12">
 
-  <!-- Application Container -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
 
-    <!-- Header Section -->
-    <header class="mb-10 text-center relative">
-      <!-- Background Glow -->
-      <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+    <!-- Header -->
+    <header class="mb-8 text-center relative">
+      <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div class="inline-flex items-center gap-3 px-4 py-1.5 rounded-full glassmorphism text-brand-400 text-sm font-medium mb-4 border border-brand-500/30">
-        <i class="fa-solid me-1 fa-graduation-cap"></i> Collège Louis Lumière • Marly-le-Roi (UAI 0780119F)
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel text-brand-400 text-xs font-semibold mb-4 border border-brand-500/20 shadow-sm">
+        <i class="fa-solid fa-graduation-cap text-sm"></i> Collège Louis Lumière
       </div>
 
       <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-brand-400 bg-clip-text text-transparent mb-3">
         Annuaire Scolaire
       </h1>
-      <p class="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto">
-        Recherchez et consultez facilement la liste des élèves et leurs responsables légaux.
+      <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
+        Élèves, Enseignants, Personnel & Parents d'élèves.
       </p>
 
-      <!-- Stats Bar -->
-      <div class="mt-6 flex justify-center items-center gap-6 text-sm text-slate-400">
+      <!-- Stats -->
+      <div class="mt-6 inline-flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-6 py-2.5 rounded-2xl glass-panel text-xs text-slate-300">
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-users text-brand-500"></i>
-          <span>Total Élèves: <strong id="total-students" class="text-white">0</strong></span>
+          <i class="fa-solid fa-user-graduate text-brand-400"></i>
+          <span>Élèves : <strong id="stat-students" class="text-white font-bold">0</strong></span>
         </div>
-        <div class="h-4 w-px bg-slate-800"></div>
+        <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
         <div class="flex items-center gap-2">
-          <i class="fa-solid fa-user-shield text-emerald-500"></i>
-          <span>Comptes Parents: <strong id="total-parents" class="text-white">0</strong></span>
+          <i class="fa-solid fa-chalkboard-user text-indigo-400"></i>
+          <span>Profs : <strong id="stat-teachers" class="text-white font-bold">0</strong></span>
+        </div>
+        <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-user-gear text-amber-400"></i>
+          <span>Personnel : <strong id="stat-staff" class="text-white font-bold">0</strong></span>
+        </div>
+        <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-people-roof text-emerald-400"></i>
+          <span>Parents : <strong id="stat-parents" class="text-white font-bold">0</strong></span>
         </div>
       </div>
     </header>
 
-    <!-- Search and Controls Bar -->
-    <div class="mb-8 p-4 rounded-2xl glassmorphism shadow-2xl relative z-10 flex flex-col md:flex-row gap-4 justify-between items-center">
-      <!-- Search Input -->
-      <div class="relative w-full md:w-1/2">
+    <!-- Bar de recherche & Filtres -->
+    <div class="mb-8 p-4 rounded-2xl glass-panel shadow-2xl space-y-4">
+      <div class="relative w-full">
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-          <i class="fa-solid fa-magnifying-glass text-lg"></i>
+          <i class="fa-solid fa-magnifying-glass"></i>
         </div>
         <input 
           type="text" 
           id="search-input"
-          placeholder="Rechercher par nom, prénom ou classe (ex: 502)..." 
-          class="w-full pl-11 pr-10 py-3 bg-slate-900/80 border border-slate-700/60 rounded-xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none text-white placeholder-slate-500 transition-all shadow-inner"
+          placeholder="Rechercher par nom, prénom, classe..." 
+          class="w-full pl-11 pr-10 py-3 bg-slate-900/90 border border-slate-800 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-white placeholder-slate-500 text-sm transition-all"
         >
-        <button id="clear-search" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white transition">
+        <button id="clear-search" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-white transition">
           <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
 
-      <!-- Class Filter Dropdown -->
-      <div class="flex w-full md:w-auto items-center gap-3">
-        <div class="relative w-full md:w-48">
-          <select id="class-filter" class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700/60 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-slate-200 cursor-pointer appearance-none">
-            <option value="ALL">Toutes les classes</option>
-          </select>
-          <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-slate-400">
-            <i class="fa-solid fa-chevron-down text-xs"></i>
-          </div>
-        </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/60">
+        <!-- Filtre Rôle -->
+        <select id="filter-role" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+          <option value="ALL">Tous les rôles</option>
+          <option value="Élève">Élèves</option>
+          <option value="Parent">Parents</option>
+          <option value="Enseignant">Enseignants / Profs</option>
+          <option value="Personnel">Personnel</option>
+        </select>
 
-        <!-- Reload Data Button -->
-        <button id="reload-btn" title="Recharger data.json" class="p-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl transition duration-200 flex items-center justify-center">
-          <i class="fa-solid fa-rotate-right"></i>
-        </button>
+        <!-- Filtre Classe -->
+        <select id="filter-class" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+          <option value="ALL">Toutes les classes</option>
+        </select>
+
+        <!-- Tri Alphabétique -->
+        <select id="sort-order" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+          <option value="AZ">Nom (A ➔ Z)</option>
+          <option value="ZA">Nom (Z ➔ A)</option>
+        </select>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div id="loading-state" class="py-20 text-center">
-      <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-brand-500 mb-4"></div>
-      <p class="text-slate-400 text-lg">Chargement de l'annuaire depuis <code class="bg-slate-800 px-2 py-1 rounded text-brand-400 text-sm">data.json</code>...</p>
+    <!-- Dépôt de fichier manuel -->
+    <div id="drop-zone" class="hidden mb-8 p-6 rounded-2xl border-2 border-dashed border-slate-800 hover:border-brand-500/50 bg-slate-900/40 text-center transition cursor-pointer">
+      <i class="fa-solid fa-file-arrow-up text-3xl text-brand-400 mb-2"></i>
+      <p class="text-sm text-slate-300 font-medium">Glissez-déposez le fichier <code class="text-brand-400">data.json</code> ici</p>
+      <input type="file" id="file-input" accept=".json" class="hidden">
     </div>
 
-    <!-- Error State -->
-    <div id="error-state" class="hidden py-16 text-center max-w-md mx-auto p-6 rounded-2xl bg-red-950/40 border border-red-500/30">
-      <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-4"></i>
-      <h3 class="text-xl font-bold text-red-200 mb-2">Fichier <code class="text-red-400">data.json</code> introuvable</h3>
-      <p class="text-slate-400 text-sm mb-6">
-        Assurez-vous d'avoir exécuté le script Python <code class="bg-slate-900 px-1.5 py-0.5 rounded text-slate-300">build_data.py</code> pour générer le fichier de données.
-      </p>
-      <button onclick="chargerAnnuaire()" class="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-sm font-medium transition">
-        Réessayer
-      </button>
-    </div>
+    <!-- Grille des Cartes -->
+    <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
-    <!-- Empty Results -->
+    <!-- Empty State -->
     <div id="empty-state" class="hidden py-16 text-center">
-      <i class="fa-solid fa-user-slash text-4xl text-slate-600 mb-4"></i>
-      <h3 class="text-lg font-semibold text-slate-300">Aucun résultat trouvé</h3>
-      <p class="text-slate-500 text-sm mt-1">Essayez de modifier votre recherche ou le filtre de classe.</p>
-    </div>
-
-    <!-- Student Cards Grid -->
-    <div id="student-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- Dynamic Student Cards will be inserted here -->
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600">
+        <i class="fa-solid fa-user-slash text-2xl"></i>
+      </div>
+      <h3 class="text-base font-semibold text-slate-300">Aucun résultat trouvé</h3>
     </div>
 
   </div>
 
-  <!-- Student Detail Modal -->
-  <div id="modal-backdrop" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center p-4">
-    <div id="modal-container" class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl scale-95 transition-transform duration-300 relative overflow-hidden">
-      
-      <!-- Close Button -->
-      <button id="modal-close" class="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-white transition flex items-center justify-center">
-        <i class="fa-solid fa-xmark text-lg"></i>
-      </button>
-
-      <!-- Student Header Info -->
-      <div class="flex items-center gap-5 mb-6">
-        <div id="modal-avatar" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-2xl font-bold text-white shadow-lg shrink-0">
-          --
-        </div>
-        <div>
-          <span id="modal-class-badge" class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-brand-500/20 text-brand-400 border border-brand-500/30">
-            Classe --
-          </span>
-          <h2 id="modal-name" class="text-2xl font-bold text-white mt-1">
-            Nom Prénom
-          </h2>
-          <p id="modal-school" class="text-xs text-slate-400 mt-0.5">
-            Collège Louis Lumière
-          </p>
-        </div>
-      </div>
-
-      <div class="space-y-4 border-t border-slate-800/80 pt-5">
-        <!-- Details List -->
-        <div class="bg-slate-950/50 rounded-xl p-3.5 border border-slate-800/50 space-y-2 text-sm">
-          <div class="flex justify-between items-center">
-            <span class="text-slate-500">Identifiant Unique (ID) :</span>
-            <span id="modal-id" class="font-mono text-xs text-slate-300 bg-slate-800 px-2 py-0.5 rounded">--</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-slate-500">Code UAI Établissement :</span>
-            <span id="modal-uai" class="font-mono text-xs text-slate-300 bg-slate-800 px-2 py-0.5 rounded">0780119F</span>
-          </div>
-        </div>
-
-        <!-- Parents / Responsables Section -->
-        <div>
-          <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
-            <i class="fa-solid fa-user-group text-brand-400"></i> Responsables Légaux Associés
-          </h4>
-          <div id="modal-parents-list" class="space-y-2">
-            <!-- Dynamic parents list -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="mt-8 pt-4 border-t border-slate-800/80 flex justify-end">
-        <button onclick="fermerModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-sm font-medium transition">
-          Fermer
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- JavaScript Logic -->
   <script>
-    let tousLesEleves = [];
-    const colors = [
+    let rawData = [];
+
+    const bgGradients = [
       'from-blue-600 to-indigo-600',
       'from-emerald-600 to-teal-600',
       'from-purple-600 to-pink-600',
@@ -239,241 +163,226 @@
       'from-rose-600 to-red-600'
     ];
 
-    // Function to get deterministic color class based on student ID
-    function getColorClass(id) {
-      let hash = 0;
-      for (let i = 0; i < id.length; i++) {
-        hash = id.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      return colors[Math.abs(hash) % colors.length];
-    }
-
-    // Function to get initials from display name
     function getInitials(name) {
       if (!name) return '??';
       const parts = name.trim().split(' ');
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-      }
-      return name.substring(0, 2).toUpperCase();
+      return parts.length >= 2 
+        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+        : name.substring(0, 2).toUpperCase();
     }
 
-    // Fetch data.json at startup
-    async function chargerAnnuaire() {
-      const loadingState = document.getElementById('loading-state');
-      const errorState = document.getElementById('error-state');
-      const studentGrid = document.getElementById('student-grid');
+    function getGradient(name) {
+      let hash = 0;
+      for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      return bgGradients[Math.abs(hash) % bgGradients.length];
+    }
 
-      loadingState.classList.remove('hidden');
-      errorState.classList.add('hidden');
-      studentGrid.innerHTML = '';
+    function getRoleBadge(role, classe) {
+      switch(role) {
+        case 'Enseignant':
+          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">Professeur</span>`;
+        case 'Personnel':
+          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20">Personnel</span>`;
+        case 'Parent':
+          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">Parent</span>`;
+        default:
+          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-500/15 text-brand-400 border border-brand-500/20">Classe ${classe || 'N/C'}</span>`;
+      }
+    }
 
+    async function loadData() {
+      const dropZone = document.getElementById('drop-zone');
       try {
         const response = await fetch('./data.json');
-        if (!response.ok) throw new Error("Impossible de charger data.json");
-
-        tousLesEleves = await response.json();
-        
-        // Populate stats & filters
-        initialiserInterface(tousLesEleves);
-        afficherEleves(tousLesEleves);
-
-        loadingState.classList.add('hidden');
+        if (!response.ok) throw new Error("Chargement direct bloqué");
+        rawData = await response.json();
+        dropZone.classList.add('hidden');
+        initApp();
       } catch (err) {
-        console.error("Erreur de chargement :", err);
-        loadingState.classList.add('hidden');
-        errorState.classList.remove('hidden');
+        dropZone.classList.remove('hidden');
       }
     }
 
-    // Populate interface metrics and dropdowns
-    function initialiserInterface(eleves) {
-      document.getElementById('total-students').textContent = eleves.length;
-
-      let totalParents = 0;
+    function initApp() {
+      let students = 0, teachers = 0, staff = 0, parents = 0;
       const classesSet = new Set();
 
-      eleves.forEach(e => {
-        if (e.class) classesSet.add(e.class);
-        if (e.parents && Array.isArray(e.parents)) {
-          totalParents += e.parents.length;
+      rawData.forEach(item => {
+        if (item.role === 'Enseignant') teachers++;
+        else if (item.role === 'Personnel') staff++;
+        else if (item.role === 'Parent') parents++;
+        else {
+          students++;
+          if (item.class && item.class !== 'N/C') classesSet.add(item.class);
         }
       });
 
-      document.getElementById('total-parents').textContent = totalParents;
+      document.getElementById('stat-students').textContent = students;
+      document.getElementById('stat-teachers').textContent = teachers;
+      document.getElementById('stat-staff').textContent = staff;
+      document.getElementById('stat-parents').textContent = parents;
 
-      // Class Filter options
-      const classFilter = document.getElementById('class-filter');
-      classFilter.innerHTML = '<option value="ALL">Toutes les classes</option>';
-      
+      const classSelect = document.getElementById('filter-class');
+      classSelect.innerHTML = '<option value="ALL">Toutes les classes</option>';
       Array.from(classesSet).sort().forEach(cls => {
         const opt = document.createElement('option');
         opt.value = cls;
         opt.textContent = `Classe ${cls}`;
-        classFilter.appendChild(opt);
+        classSelect.appendChild(opt);
       });
+
+      renderCards();
     }
 
-    // Display student cards
-    function afficherEleves(eleves) {
-      const grid = document.getElementById('student-grid');
+    function renderCards() {
+      const grid = document.getElementById('cards-grid');
       const emptyState = document.getElementById('empty-state');
+      
+      const search = document.getElementById('search-input').value.toLowerCase().trim();
+      const roleFilter = document.getElementById('filter-role').value;
+      const classFilter = document.getElementById('filter-class').value;
+      const sortOrder = document.getElementById('sort-order').value;
+
+      let filtered = rawData.filter(item => {
+        const matchesSearch = item.displayName.toLowerCase().includes(search) ||
+                              (item.class && item.class.toLowerCase().includes(search));
+        
+        const matchesRole = roleFilter === 'ALL' || item.role === roleFilter;
+        const matchesClass = classFilter === 'ALL' || item.class === classFilter;
+
+        return matchesSearch && matchesRole && matchesClass;
+      });
+
+      filtered.sort((a, b) => {
+        const nameA = a.displayName.toLowerCase();
+        const nameB = b.displayName.toLowerCase();
+        return sortOrder === 'AZ' ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+      });
+
       grid.innerHTML = '';
 
-      if (eleves.length === 0) {
+      if (filtered.length === 0) {
         emptyState.classList.remove('hidden');
         return;
       }
 
       emptyState.classList.add('hidden');
 
-      eleves.forEach(eleve => {
-        const initials = getInitials(eleve.displayName);
-        const gradient = getColorClass(eleve.id);
-        const parentsCount = eleve.parents ? eleve.parents.length : 0;
+      filtered.forEach((item, index) => {
+        const initials = getInitials(item.displayName);
+        const gradient = getGradient(item.displayName);
 
         const card = document.createElement('div');
-        card.className = "group glassmorphism hover:border-slate-700/80 rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer flex flex-col justify-between";
-        card.onclick = () => ouvrirModal(eleve);
+        card.className = "glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all duration-200 card-animate flex flex-col justify-between";
+        card.style.animationDelay = `${Math.min(index * 0.03, 0.3)}s`;
 
-        card.innerHTML = `
+        let cardHTML = `
           <div>
-            <div class="flex items-start justify-between mb-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${gradient} flex items-center justify-center font-bold text-white text-lg shadow-md group-hover:scale-105 transition-transform">
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${gradient} flex items-center justify-center text-white font-bold text-base shadow-lg shrink-0">
                 ${initials}
               </div>
-              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">
-                ${eleve.class || 'N/C'}
-              </span>
+              ${getRoleBadge(item.role, item.class)}
             </div>
 
-            <h3 class="font-bold text-white text-lg group-hover:text-brand-400 transition-colors line-clamp-1">
-              ${eleve.displayName}
+            <h3 class="font-bold text-white text-base leading-snug">
+              ${item.displayName}
             </h3>
-            <p class="text-xs text-slate-400 mt-0.5">
-              ${eleve.school || 'CLG-LOUIS LUMIERE'}
+            
+            <p class="text-xs text-slate-400 mt-1">
+              ${item.school || 'CLG-LOUIS LUMIERE'}
             </p>
-          </div>
-
-          <div class="mt-6 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500">
-            <span class="flex items-center gap-1.5">
-              <i class="fa-solid fa-user-shield text-slate-400"></i>
-              ${parentsCount} responsable(s)
-            </span>
-            <i class="fa-solid fa-arrow-right text-slate-600 group-hover:text-brand-400 group-hover:translate-x-1 transition-all"></i>
-          </div>
         `;
 
+        if (item.motto) {
+          cardHTML += `
+            <p class="mt-3 text-xs italic text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/50">
+              « ${item.motto} »
+            </p>
+          `;
+        }
+
+        if (item.hobbies && item.hobbies.length > 0) {
+          cardHTML += `
+            <div class="mt-3 flex flex-wrap gap-1">
+              ${item.hobbies.map(h => `<span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400">${h}</span>`).join('')}
+            </div>
+          `;
+        }
+
+        cardHTML += `</div>`;
+
+        // Section Relations (Parents pour l'élève / Enfants pour le parent)
+        if (item.relations && item.relations.length > 0) {
+          const isParentRole = item.role === 'Parent';
+          const title = isParentRole ? 'Enfant(s) rattaché(s)' : 'Responsable(s)';
+          const icon = isParentRole ? 'fa-user-graduate text-brand-400' : 'fa-people-roof text-emerald-400';
+          const dotColor = isParentRole ? 'bg-brand-400' : 'bg-emerald-400';
+
+          cardHTML += `
+            <div class="mt-4 pt-3 border-t border-slate-800/80">
+              <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block mb-1.5">
+                <i class="fa-solid ${icon} me-1"></i> ${title}
+              </span>
+              <div class="space-y-1">
+                ${item.relations.map(rel => `
+                  <div class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full ${dotColor} inline-block"></span>
+                    ${rel}
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        card.innerHTML = cardHTML;
         grid.appendChild(card);
       });
     }
 
-    // Modal Details Logic
-    function ouvrirModal(eleve) {
-      const backdrop = document.getElementById('modal-backdrop');
-      const container = document.getElementById('modal-container');
-
-      document.getElementById('modal-avatar').className = `w-16 h-16 rounded-2xl bg-gradient-to-tr ${getColorClass(eleve.id)} flex items-center justify-center text-2xl font-bold text-white shadow-lg shrink-0`;
-      document.getElementById('modal-avatar').textContent = getInitials(eleve.displayName);
-      document.getElementById('modal-name').textContent = eleve.displayName;
-      document.getElementById('modal-class-badge').textContent = `Classe ${eleve.class || 'N/C'}`;
-      document.getElementById('modal-school').textContent = eleve.school || 'CLG-LOUIS LUMIERE-MARLY-LE-ROI';
-      document.getElementById('modal-id').textContent = eleve.id;
-      document.getElementById('modal-uai').textContent = eleve.uai || '0780119F';
-
-      // Parents list
-      const parentsList = document.getElementById('modal-parents-list');
-      parentsList.innerHTML = '';
-
-      if (eleve.parents && eleve.parents.length > 0) {
-        eleve.parents.forEach(p => {
-          const item = document.createElement('div');
-          item.className = "flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 text-sm";
-          item.innerHTML = `
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 text-xs">
-                <i class="fa-solid fa-user"></i>
-              </div>
-              <div>
-                <div class="font-medium text-slate-200">${p.displayName}</div>
-                <div class="text-xs text-slate-500 font-mono">ID: ${p.id}</div>
-              </div>
-            </div>
-            <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Parent
-            </span>
-          `;
-          parentsList.appendChild(item);
-        });
-      } else {
-        parentsList.innerHTML = `
-          <div class="text-xs text-slate-500 italic py-2">
-            Aucun responsable légal répertorié.
-          </div>
-        `;
-      }
-
-      backdrop.classList.remove('opacity-0', 'pointer-events-none');
-      container.classList.remove('scale-95');
-      container.classList.add('scale-100');
-    }
-
-    function fermerModal() {
-      const backdrop = document.getElementById('modal-backdrop');
-      const container = document.getElementById('modal-container');
-
-      backdrop.classList.add('opacity-0', 'pointer-events-none');
-      container.classList.remove('scale-100');
-      container.classList.add('scale-95');
-    }
-
-    // Search and Filter Handlers
-    function filtrerEleves() {
-      const query = document.getElementById('search-input').value.toLowerCase().trim();
-      const classSelected = document.getElementById('class-filter').value;
-      const clearBtn = document.getElementById('clear-search');
-
-      if (query.length > 0) {
-        clearBtn.classList.remove('hidden');
-      } else {
-        clearBtn.classList.add('hidden');
-      }
-
-      const resultat = tousLesEleves.filter(e => {
-        const matchQuery = e.displayName.toLowerCase().includes(query) ||
-                           (e.class && e.class.toLowerCase().includes(query)) ||
-                           e.id.toLowerCase().includes(query);
-
-        const matchClass = classSelected === 'ALL' || e.class === classSelected;
-
-        return matchQuery && matchClass;
-      });
-
-      afficherEleves(resultat);
-    }
-
-    // Event Listeners
     document.addEventListener('DOMContentLoaded', () => {
-      chargerAnnuaire();
+      loadData();
 
-      document.getElementById('search-input').addEventListener('input', filtrerEleves);
-      document.getElementById('class-filter').addEventListener('change', filtrerEleves);
-      document.getElementById('reload-btn').addEventListener('click', chargerAnnuaire);
-      document.getElementById('modal-close').addEventListener('click', fermerModal);
-      
-      document.getElementById('clear-search').addEventListener('click', () => {
-        document.getElementById('search-input').value = '';
-        filtrerEleves();
+      const searchInput = document.getElementById('search-input');
+      const clearSearch = document.getElementById('clear-search');
+
+      searchInput.addEventListener('input', () => {
+        clearSearch.classList.toggle('hidden', searchInput.value.length === 0);
+        renderCards();
       });
 
-      // Close modal on backdrop click
-      document.getElementById('modal-backdrop').addEventListener('click', (e) => {
-        if (e.target.id === 'modal-backdrop') fermerModal();
+      clearSearch.addEventListener('click', () => {
+        searchInput.value = '';
+        clearSearch.classList.add('hidden');
+        renderCards();
       });
 
-      // Close modal on ESC key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') fermerModal();
+      document.getElementById('filter-role').addEventListener('change', renderCards);
+      document.getElementById('filter-class').addEventListener('change', renderCards);
+      document.getElementById('sort-order').addEventListener('change', renderCards);
+
+      const dropZone = document.getElementById('drop-zone');
+      const fileInput = document.getElementById('file-input');
+
+      dropZone.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            try {
+              rawData = JSON.parse(event.target.result);
+              dropZone.classList.add('hidden');
+              initApp();
+            } catch (err) {
+              alert("Erreur de format JSON.");
+            }
+          };
+          reader.readAsText(file);
+        }
       });
     });
   </script>
