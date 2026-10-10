@@ -202,7 +202,8 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Gestion de la visibilité des profils</h4>
-            <p class="text-xs text-slate-500 mt-0.5">Visualisez et modifiez instantanément les profils cachés ou restreints.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Modifiez la visibilité : les réglages sont enregistrés dans ce navigateur.</p>
+            <p id="visibility-save-status" role="status" aria-live="polite" class="text-xs text-emerald-400 mt-1">Enregistrement automatique activé.</p>
           </div>
           <input type="text" id="admin-search-profile" placeholder="Rechercher un profil à administrer..." class="w-full sm:w-72 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
         </div>
@@ -215,10 +216,66 @@
 
   <script>
     let rawData = [];
-    let userRole = localStorage.getItem('userRole') || 'normal';
-    let customCodes = JSON.parse(localStorage.getItem('customCodes')) || { 'VIP2026': 'vip', 'ADMINEXTRA': 'extra' };
-    let hiddenProfiles = JSON.parse(localStorage.getItem('hiddenProfiles')) || {}; 
-    let vipRequests = JSON.parse(localStorage.getItem('vipRequests')) || [];
+
+    // Lecture protégée : une valeur absente ou abîmée ne doit pas arrêter toute l'application.
+    function lireJSONStockage(cle, valeurParDefaut) {
+      try {
+        const valeur = localStorage.getItem(cle);
+        return valeur === null ? valeurParDefaut : JSON.parse(valeur);
+      } catch (erreur) {
+        console.warn(`Impossible de lire ${cle} dans le stockage du navigateur.`, erreur);
+        return valeurParDefaut;
+      }
+    }
+
+    function enregistrerJSONStockage(cle, valeur) {
+      try {
+        localStorage.setItem(cle, JSON.stringify(valeur));
+        // Vérifie que la valeur est effectivement relisible après l'écriture.
+        const relu = localStorage.getItem(cle);
+        return relu !== null && JSON.stringify(JSON.parse(relu)) === JSON.stringify(valeur);
+      } catch (erreur) {
+        console.error(`Impossible d'enregistrer ${cle} dans le stockage du navigateur.`, erreur);
+        return false;
+      }
+    }
+
+    function afficherEtatVisibilite(message, erreur = false) {
+      const statut = document.getElementById('visibility-save-status');
+      if (!statut) return;
+      statut.textContent = message;
+      statut.className = erreur
+        ? 'text-xs text-rose-400 mt-1'
+        : 'text-xs text-emerald-400 mt-1';
+    }
+
+    function lireRoleStocke() {
+      try { return localStorage.getItem('userRole') || 'normal'; }
+      catch (erreur) { return 'normal'; }
+    }
+
+    let userRole = lireRoleStocke();
+    let customCodes = lireJSONStockage('customCodes', { 'VIP2026': 'vip', 'ADMINEXTRA': 'extra' });
+    let hiddenProfiles = lireJSONStockage('hiddenProfiles', {});
+    let vipRequests = lireJSONStockage('vipRequests', []);
+
+    // Clé stable par profil, même si le nom contient une apostrophe ou des caractères spéciaux.
+    // Si data.json fournit un identifiant, celui-ci est prioritaire.
+    function getProfileKey(item) {
+      if (item.id !== undefined && item.id !== null && String(item.id).trim() !== '') {
+        return `id:${String(item.id).trim()}`;
+      }
+      const part = value => String(value ?? '').trim().toLocaleLowerCase('fr-FR');
+      return `profile:${[item.displayName, item.role, item.class, item.school].map(part).join('::')}`;
+    }
+
+    function getProfileVisibility(item) {
+      const key = getProfileKey(item);
+      if (Object.prototype.hasOwnProperty.call(hiddenProfiles, key)) return hiddenProfiles[key];
+      // Compatibilité avec les anciens réglages, qui étaient indexés uniquement par nom.
+      if (Object.prototype.hasOwnProperty.call(hiddenProfiles, item.displayName)) return hiddenProfiles[item.displayName];
+      return 'none';
+    }
 
     let currentPage = 1;
     const itemsPerPage = 12;
@@ -323,7 +380,7 @@
       const sortOrder = document.getElementById('sort-order').value;
 
       let filtered = rawData.filter(item => {
-        const hideLevel = hiddenProfiles[item.displayName]; 
+        const hideLevel = getProfileVisibility(item);
         if (userRole === 'normal' && (hideLevel === 'normal' || hideLevel === 'vip')) return false;
         if (userRole === 'vip' && hideLevel === 'vip') return false;
 
@@ -534,30 +591,75 @@
     }
 
     function renderAdminVisibilityList() {
-      const searchAdmin = document.getElementById('admin-search-profile').value.toLowerCase().trim();
+      const searchInput = document.getElementById('admin-search-profile');
+      const searchAdmin = (searchInput?.value || '').toLocaleLowerCase('fr-FR').trim();
       const visDiv = document.getElementById('admin-visibility-list');
-      const filteredProfiles = rawData.filter(item => item.displayName.toLowerCase().includes(searchAdmin));
+      const filteredProfiles = rawData.filter(item =>
+        String(item.displayName || '').toLocaleLowerCase('fr-FR').includes(searchAdmin)
+      );
 
-      visDiv.innerHTML = filteredProfiles.map(item => {
-        const currentHide = hiddenProfiles[item.displayName] || 'none';
-        return `
-          <div class="flex flex-col justify-between bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs gap-2">
-            <span class="text-slate-200 font-medium truncate">${item.displayName} <span class="text-slate-500">(${item.role})</span></span>
-            <select onchange="changerVisibiliteProfil('${item.displayName.replace(/'/g, "\\'")}', this.value)" class="bg-slate-800 text-slate-300 rounded px-2 py-1.5 text-[11px] outline-none border border-slate-700">
-              <option value="none" ${currentHide === 'none' ? 'selected' : ''}>Visible pour tous</option>
-              <option value="normal" ${currentHide === 'normal' ? 'selected' : ''}>Masqué en Mode Normal</option>
-              <option value="vip" ${currentHide === 'vip' ? 'selected' : ''}>Masqué Normal & VIP</option>
-            </select>
-          </div>
-        `;
-      }).join('');
+      visDiv.innerHTML = '';
+      if (filteredProfiles.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'text-xs text-slate-500 italic p-3';
+        empty.textContent = rawData.length ? 'Aucun profil correspondant.' : 'Les profils seront affichés après le chargement de data.json.';
+        visDiv.appendChild(empty);
+        return;
+      }
+
+      filteredProfiles.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'flex flex-col justify-between bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs gap-2';
+
+        const label = document.createElement('span');
+        label.className = 'text-slate-200 font-medium truncate';
+        label.textContent = `${item.displayName || 'Profil sans nom'} (${item.role || 'Rôle inconnu'})`;
+
+        const select = document.createElement('select');
+        select.className = 'bg-slate-800 text-slate-300 rounded px-2 py-1.5 text-[11px] outline-none border border-slate-700';
+        select.setAttribute('aria-label', `Visibilité de ${item.displayName || 'ce profil'}`);
+        [
+          ['none', 'Visible pour tous'],
+          ['normal', 'Masqué en Mode Normal'],
+          ['vip', 'Masqué Normal & VIP']
+        ].forEach(([value, text]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = text;
+          select.appendChild(option);
+        });
+        select.value = getProfileVisibility(item);
+        select.addEventListener('change', () => changerVisibiliteProfil(item, select.value));
+
+        card.append(label, select);
+        visDiv.appendChild(card);
+      });
     }
 
-    function changerVisibiliteProfil(name, level) {
-      if (level === 'none') delete hiddenProfiles[name];
-      else hiddenProfiles[name] = level;
-      localStorage.setItem('hiddenProfiles', JSON.stringify(hiddenProfiles));
+    function changerVisibiliteProfil(item, level) {
+      const key = getProfileKey(item);
+      const ancienneValeur = JSON.stringify(hiddenProfiles);
+
+      if (level === 'none') delete hiddenProfiles[key];
+      else hiddenProfiles[key] = level;
+
+      // Supprime l'ancienne entrée basée uniquement sur le nom pour éviter qu'elle prenne le dessus.
+      if (item.displayName && Object.prototype.hasOwnProperty.call(hiddenProfiles, item.displayName)) {
+        delete hiddenProfiles[item.displayName];
+      }
+
+      const sauvegardeOK = enregistrerJSONStockage('hiddenProfiles', hiddenProfiles);
+      if (!sauvegardeOK) {
+        try { hiddenProfiles = JSON.parse(ancienneValeur); } catch (_) { hiddenProfiles = {}; }
+        renderAdminVisibilityList();
+        afficherEtatVisibilite('Échec de sauvegarde : le navigateur bloque peut-être le stockage. Ouvre la page via son adresse HTTPS habituelle.', true);
+        alert('Le réglage n’a pas pu être enregistré. Vérifie que le navigateur autorise le stockage des données pour ce site.');
+        return;
+      }
+
+      afficherEtatVisibilite('✓ Réglage enregistré. Il sera conservé au prochain rechargement sur ce navigateur.');
       renderCards();
+      renderAdminVisibilityList();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
