@@ -43,11 +43,21 @@
     body[data-vip-theme="emerald"] { --theme-accent: #34d399; }
     body[data-vip-theme="blue"] { --theme-accent: #38bdf8; }
     .focus-ring:focus-visible { outline: 2px solid var(--theme-accent, #38bdf8); outline-offset: 3px; }
+    .app-shell { position: relative; isolation: isolate; }
+    .app-shell::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(circle at 15% 5%, rgba(14,165,233,.11), transparent 32%), radial-gradient(circle at 92% 12%, rgba(139,92,246,.12), transparent 30%); }
+    .premium-card { background: linear-gradient(165deg, rgba(30,41,59,.96), rgba(2,6,23,.98)); border: 1px solid rgba(255,255,255,.10); box-shadow: 0 20px 70px rgba(0,0,0,.24); }
+    .offer-card { position: relative; border: 1px solid rgba(148,163,184,.22); background: linear-gradient(160deg, rgba(15,23,42,.98), rgba(2,6,23,.98)); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+    .offer-card:hover { transform: translateY(-4px); border-color: rgba(245,158,11,.52); box-shadow: 0 16px 44px rgba(0,0,0,.28); }
+    .offer-card.popular { border: 1px solid rgba(245,158,11,.72); box-shadow: 0 0 0 1px rgba(245,158,11,.16), 0 18px 50px rgba(245,158,11,.08); }
+    .offer-gradient { background: linear-gradient(115deg, #f59e0b, #facc15 50%, #fb923c); }
+    .mini-label { display:inline-flex; align-items:center; gap:.35rem; border:1px solid rgba(255,255,255,.1); background:rgba(15,23,42,.65); border-radius:999px; padding:.35rem .6rem; font-size:.67rem; color:#cbd5e1; }
+    .admin-request-card { border:1px solid rgba(148,163,184,.15); background:rgba(2,6,23,.6); border-radius:1rem; padding:1rem; }
+    @media (prefers-reduced-motion: reduce) { .offer-card { transition:none; } .offer-card:hover { transform:none; } }
   </style>
 </head>
 <body class="min-h-screen selection:bg-brand-500 selection:text-white pb-16">
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+  <div class="app-shell max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
     <!-- Top Bar Navigation -->
     <div class="flex justify-between items-center mb-6 p-4 rounded-2xl glass-panel shadow-lg">
@@ -91,21 +101,23 @@
       </div>
     </header>
 
-    <!-- Bannière promo VIP : masquée automatiquement pour VIP/Extra -->
-    <section id="vip-promo-banner" class="vip-promo rounded-2xl p-5 mb-6 shadow-xl">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <!-- Bannière VIP : bénéfices et tarifs clairs -->
+    <section id="vip-promo-banner" class="vip-promo premium-card rounded-3xl p-5 sm:p-7 mb-7 shadow-2xl">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
         <div class="flex-1">
-          <div class="flex items-center gap-2 mb-2"><span class="px-2 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider"><i class="fa-solid fa-crown mr-1"></i> Annuaire VIP</span><span class="text-[10px] text-slate-400">Options supplémentaires</span></div>
-          <h2 class="text-lg sm:text-xl font-extrabold text-white">Passe au VIP et personnalise ton annuaire</h2>
-          <p class="text-xs sm:text-sm text-slate-300 mt-1">Moins de distractions, recherches plus rapides et affichage à ta façon.</p>
-          <div class="flex flex-wrap gap-2 mt-3">
-            <span class="vip-benefit"><i class="fa-solid fa-ban text-amber-300"></i> Sans bannières promo</span>
-            <span class="vip-benefit"><i class="fa-solid fa-eye-slash text-amber-300"></i> Masquer des profils pour toi</span>
-            <span class="vip-benefit"><i class="fa-solid fa-users text-amber-300"></i> Voir les profils autorisés aux VIP</span>
-            <span class="vip-benefit"><i class="fa-solid fa-star text-amber-300"></i> Favoris et recherches enregistrées</span>
+          <div class="flex items-center gap-2 mb-3"><span class="px-3 py-1 rounded-full bg-amber-400/15 text-amber-200 text-[10px] font-extrabold uppercase tracking-widest"><i class="fa-solid fa-crown mr-1"></i> Pass VIP</span><span class="mini-label">Options bonus</span></div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Un annuaire plus pratique, à ton rythme.</h2>
+          <p class="text-sm text-slate-300 mt-2 max-w-3xl">Passe en VIP pour garder tes profils préférés, masquer des fiches uniquement pour toi et personnaliser l’affichage. Le VIP Extra ajoute des options de personnalisation.</p>
+          <div class="flex flex-wrap gap-2 mt-4">
+            <span class="vip-benefit"><i class="fa-solid fa-ban text-amber-300"></i> Sans promotions intégrées</span>
+            <span class="vip-benefit"><i class="fa-solid fa-star text-amber-300"></i> Favoris privés</span>
+            <span class="vip-benefit"><i class="fa-solid fa-eye-slash text-amber-300"></i> Masquer pour soi</span>
+            <span class="vip-benefit"><i class="fa-solid fa-palette text-amber-300"></i> Thèmes et badges</span>
+            <span class="vip-benefit"><i class="fa-solid fa-grip text-amber-300"></i> Vue compacte</span>
           </div>
+          <p class="text-[11px] text-slate-400 mt-3">Prix proposés : Gratuit 0 € · VIP 2 € · VIP Extra 10 €. Les demandes payantes sont examinées manuellement : aucun prélèvement n’est effectué sur ce site.</p>
         </div>
-        <button type="button" onclick="openVipModal()" class="shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-sm font-extrabold shadow-lg transition"><i class="fa-solid fa-crown mr-2"></i>Devenir VIP</button>
+        <button type="button" onclick="openVipModal()" class="shrink-0 px-6 py-3.5 rounded-2xl offer-gradient hover:brightness-110 text-slate-950 text-sm font-extrabold shadow-xl transition"><i class="fa-solid fa-crown mr-2"></i>Découvrir les offres</button>
       </div>
     </section>
 
@@ -137,38 +149,24 @@
       </div>
     </div>
 
-    <!-- Outils avancés VIP et préférences locales -->
-    <section class="glass-panel rounded-2xl p-4 mb-6 space-y-3">
+    <!-- Outils réservés aux VIP : les favoris sont le seul outil de sauvegarde de recherche -->
+    <section id="vip-tools-section" class="hidden glass-panel rounded-2xl p-4 sm:p-5 mb-6 space-y-4 premium-card">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-sliders text-brand-400 mr-2"></i>Outils de l’annuaire</h2>
-          <p class="text-[11px] text-slate-500 mt-1">Les préférences personnelles sont sauvegardées dans ce navigateur.</p>
+          <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-sparkles text-amber-300 mr-2"></i>Mon espace VIP</h2>
+          <p class="text-[11px] text-slate-400 mt-1">Retrouve tes favoris et personnalise l’affichage. Aucune recherche n’est enregistrée.</p>
         </div>
         <div class="flex flex-wrap gap-2">
-          <button id="show-favorites-btn" type="button" onclick="basculerFavoris()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-amber-400"><i class="fa-solid fa-star mr-1 text-amber-300"></i>Mes favoris <span id="favorites-count" class="ml-1 text-slate-400">0</span></button>
-          <button id="manage-hidden-btn" type="button" onclick="ouvrirGestionProfilsMasques()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-rose-400"><i class="fa-solid fa-eye-slash mr-1"></i>Profils masqués</button>
-          <button id="compact-toggle-btn" type="button" onclick="basculerModeCompact()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-grip mr-1"></i>Vue compacte</button>
-          <button type="button" onclick="ouvrirCentreActivite()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-bell mr-1"></i>Activité <span id="activity-count" class="ml-1 text-slate-400">0</span></button>
+          <button id="show-favorites-btn" type="button" onclick="basculerFavoris()" class="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-100 text-xs font-semibold hover:bg-amber-500/20"><i class="fa-solid fa-star mr-1 text-amber-300"></i>Mes favoris <span id="favorites-count" class="ml-1 text-amber-200">0</span></button>
+          <button id="manage-hidden-btn" type="button" onclick="ouvrirGestionProfilsMasques()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-rose-400"><i class="fa-solid fa-eye-slash mr-1"></i>Profils masqués</button>
+          <button id="compact-toggle-btn" type="button" onclick="basculerModeCompact()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-grip mr-1"></i>Vue compacte</button>
+          <button type="button" onclick="ouvrirCentreActivite()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-bell mr-1"></i>Activité <span id="activity-count" class="ml-1 text-slate-400">0</span></button>
         </div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-slate-800/70">
-        <div>
-          <label for="saved-search-select" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Recherches enregistrées (VIP)</label>
-          <select id="saved-search-select" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="">Choisir une recherche…</option></select>
-        </div>
-        <div>
-          <label for="search-history-select" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Historique récent</label>
-          <select id="search-history-select" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="">Reprendre une recherche…</option></select>
-        </div>
-        <div class="flex items-end gap-2">
-          <button id="save-search-btn" type="button" onclick="enregistrerRecherche()" class="flex-1 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs font-semibold hover:bg-amber-500/25"><i class="fa-solid fa-bookmark mr-1"></i>Enregistrer la recherche</button>
-          <select id="theme-select" aria-label="Thème de l’annuaire" class="max-w-28 px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="blue">Bleu</option><option value="violet">Violet</option><option value="emerald">Émeraude</option></select>
-        </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/70">
-        <label for="cosmetic-badge-select" class="text-[10px] uppercase tracking-wider text-slate-500">Badge décoratif VIP</label>
-        <select id="cosmetic-badge-select" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="none">Aucun badge</option><option value="collector">Collectionneur ⭐</option><option value="explorer">Explorateur 🧭</option><option value="organise">Bien organisé ✨</option></select>
-        <span class="text-[10px] text-slate-500">Décoratif uniquement, enregistré sur cet appareil.</span>
+      <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800/70">
+        <div class="flex items-center gap-2"><label for="theme-select" class="text-[10px] uppercase tracking-wider text-slate-400">Thème</label><select id="theme-select" aria-label="Thème de l’annuaire" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="blue">Bleu</option><option value="violet">Violet</option><option value="emerald">Émeraude</option></select></div>
+        <div class="flex items-center gap-2"><label for="cosmetic-badge-select" class="text-[10px] uppercase tracking-wider text-slate-400">Badge décoratif</label><select id="cosmetic-badge-select" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="none">Aucun</option><option value="collector">Collectionneur ⭐</option><option value="explorer">Explorateur 🧭</option><option value="organise">Bien organisé ✨</option></select></div>
+        <span class="text-[10px] text-slate-500">Les préférences sont actuellement conservées sur cet appareil.</span>
       </div>
     </section>
 
@@ -192,37 +190,69 @@
 
   </div>
 
-  <!-- MODALE VIP ACCESS / DEMANDE -->
-  <div id="vip-modal" class="fixed inset-0 bg-slate-950/80 z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
-      <button onclick="closeVipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      
-      <div class="text-center mb-6">
-        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl"><i class="fa-solid fa-crown"></i></div>
-        <h3 class="text-xl font-bold text-white">Portail VIP & VIP Extra</h3>
-        <p class="text-xs text-slate-400 mt-1">Personnalise ton annuaire et profite des outils avancés.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 text-left">
-          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-ban text-amber-300 mr-2"></i>Pas de bannières promotionnelles</div>
-          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-eye-slash text-amber-300 mr-2"></i>Masquer des profils pour soi</div>
-          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-users text-amber-300 mr-2"></i>Profils autorisés aux VIP</div>
-          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-star text-amber-300 mr-2"></i>Favoris, thèmes et recherches sauvées</div>
-        </div>
+  <!-- MODALE : offres gratuites et VIP -->
+  <div id="vip-modal" class="fixed inset-0 bg-slate-950/90 z-50 hidden items-start justify-center p-4 overflow-y-auto">
+    <div class="premium-card border border-amber-500/20 rounded-3xl max-w-6xl w-full p-5 sm:p-7 shadow-2xl relative my-6">
+      <button onclick="closeVipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-2" aria-label="Fermer les offres"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <div class="text-center mb-7 pt-2">
+        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl offer-gradient text-slate-950 flex items-center justify-center text-2xl shadow-lg"><i class="fa-solid fa-crown"></i></div>
+        <p class="text-[10px] font-extrabold tracking-[.25em] uppercase text-amber-300">Choisis ton accès</p>
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-white mt-2">Fais évoluer ton annuaire</h3>
+        <p class="text-sm text-slate-400 mt-2 max-w-2xl mx-auto">Les offres payantes envoient une demande à l’administration. Aucun paiement ni prélèvement n’est effectué automatiquement.</p>
       </div>
-
-      <div class="space-y-4">
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-          <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Option 1 : J'ai un code VIP / Extra</h4>
-          <input type="text" id="vip-code-input" placeholder="Entrez votre code secret..." class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-amber-500">
-          <button onclick="validerCodeVip()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Activer le code</button>
-        </div>
-
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-          <h4 class="text-xs font-semibold text-brand-400 uppercase tracking-wider">Option 2 : Envoyer une demande VIP</h4>
-          <input type="text" id="req-name" placeholder="Votre Nom et Prénom..." class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
-          <textarea id="req-msg" placeholder="Pourquoi souhaitez-vous devenir VIP ?" rows="2" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none resize-none"></textarea>
-          <button onclick="envoyerDemandeVip()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-xs transition">Envoyer la demande</button>
-        </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
+        <article class="offer-card rounded-2xl p-5 flex flex-col">
+          <span class="mini-label self-start">Accès essentiel</span>
+          <h4 class="text-lg font-extrabold text-white mt-4">Normal</h4>
+          <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">0 €</span><span class="text-xs text-slate-500">gratuit</span></div>
+          <p class="text-xs text-slate-400 mt-2">Pour utiliser les fonctions essentielles de l’annuaire.</p>
+          <ul class="mt-5 space-y-3 text-xs text-slate-300 flex-1"><li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Recherche et filtres de base</li><li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Consultation des profils autorisés</li><li><i class="fa-solid fa-minus text-slate-500 mr-2"></i>Pas de favoris personnels</li><li><i class="fa-solid fa-minus text-slate-500 mr-2"></i>Bannières de présentation VIP</li></ul>
+          <button type="button" onclick="choisirOffreGratuite()" class="mt-6 w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold">Choisir Gratuit</button>
+        </article>
+        <article class="offer-card popular rounded-2xl p-5 flex flex-col md:-translate-y-2">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap offer-gradient text-slate-950 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-lg"><i class="fa-solid fa-fire mr-1"></i> Le plus populaire</div>
+          <span class="mini-label self-start mt-2 border-amber-400/30 text-amber-200">Pour le quotidien</span>
+          <h4 class="text-lg font-extrabold text-amber-100 mt-4"><i class="fa-solid fa-crown mr-2 text-amber-300"></i>VIP</h4>
+          <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">2 €</span><span class="text-xs text-slate-500">prix proposé</span></div>
+          <p class="text-xs text-slate-400 mt-2">Plus de confort et une liste personnelle.</p>
+          <ul class="mt-5 space-y-3 text-xs text-slate-200 flex-1"><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Sans bannières promotionnelles intégrées</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Favoris et filtre « Mes favoris »</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Masquer des profils pour soi</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Thèmes et vue compacte</li></ul>
+          <button type="button" onclick="demanderOffre('vip', 2)" class="mt-6 w-full px-4 py-3 rounded-xl offer-gradient hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg"><i class="fa-solid fa-paper-plane mr-2"></i>Demander VIP — 2 €</button>
+        </article>
+        <article class="offer-card rounded-2xl p-5 flex flex-col border-violet-400/30">
+          <span class="mini-label self-start border-violet-400/30 text-violet-200">Personnalisation avancée</span>
+          <h4 class="text-lg font-extrabold text-violet-100 mt-4"><i class="fa-solid fa-gem mr-2 text-violet-300"></i>VIP Extra</h4>
+          <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">10 €</span><span class="text-xs text-slate-500">prix proposé</span></div>
+          <p class="text-xs text-slate-400 mt-2">Toutes les options VIP, avec des extras décoratifs.</p>
+          <ul class="mt-5 space-y-3 text-xs text-slate-200 flex-1"><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Tous les avantages VIP</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Badges décoratifs supplémentaires</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Options avancées de personnalisation</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Profils autorisés au grade VIP Extra</li></ul>
+          <button type="button" onclick="demanderOffre('vipExtra', 10)" class="mt-6 w-full px-4 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-extrabold shadow-lg"><i class="fa-solid fa-gem mr-2"></i>Demander VIP Extra — 10 €</button>
+        </article>
       </div>
+      <div class="mt-5 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-[11px] text-slate-400"><i class="fa-solid fa-circle-info text-sky-300 mr-2"></i>Les tarifs sont des prix proposés, sans périodicité définie. En cliquant sur une offre payante, tu envoies seulement une demande à l’administrateur ; tu devras convenir du reste avec lui.</div>
+      <div class="mt-5 border-t border-slate-800 pt-5">
+        <details class="group"><summary class="cursor-pointer text-xs text-slate-400 hover:text-slate-200 font-semibold"><i class="fa-solid fa-ticket mr-2 text-amber-300"></i>Tu possèdes déjà un code VIP ou Extra ?</summary>
+          <div class="mt-3 flex flex-col sm:flex-row gap-2"><input type="text" id="vip-code-input" placeholder="Saisis ton code d’accès" class="flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-amber-500"><button onclick="validerCodeVip()" class="px-5 py-2.5 rounded-xl offer-gradient text-slate-950 font-bold text-xs">Activer le code</button></div>
+          <p class="text-[10px] text-slate-500 mt-2">Les codes partagés doivent être synchronisés dans Firestore par l’administrateur.</p>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE : demande de souscription (aucun paiement automatique) -->
+  <div id="purchase-request-modal" class="fixed inset-0 bg-slate-950/90 z-[65] hidden flex items-center justify-center p-4">
+    <div class="premium-card rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-amber-400/25">
+      <button type="button" onclick="fermerDemandeOffre()" class="absolute top-3 right-3 p-2 text-slate-400 hover:text-white" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      <div class="w-12 h-12 rounded-2xl offer-gradient flex items-center justify-center text-slate-950 text-xl mb-4"><i class="fa-solid fa-paper-plane"></i></div>
+      <h3 class="text-xl font-extrabold text-white">Envoyer la demande</h3>
+      <p class="text-xs text-slate-400 mt-1">Ta demande arrivera dans le panneau administrateur. Aucun paiement n’est effectué ici.</p>
+      <div class="mt-4 rounded-xl bg-slate-950 border border-slate-800 p-3"><div id="purchase-request-offer" class="text-sm font-bold text-amber-200">VIP — 2 €</div><div class="text-[10px] text-slate-500 mt-1">L’administrateur te recontactera pour la suite.</div></div>
+      <label for="purchase-request-name" class="block text-xs font-semibold text-slate-300 mt-4 mb-1.5">Nom ou pseudonyme *</label>
+      <input id="purchase-request-name" maxlength="100" required placeholder="Ton nom ou pseudonyme" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-amber-500">
+      <label for="purchase-request-email" class="block text-xs font-semibold text-slate-300 mt-3 mb-1.5">E-mail de contact (facultatif)</label>
+      <input id="purchase-request-email" type="email" maxlength="254" placeholder="contact@example.com" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-amber-500">
+      <label for="purchase-request-note" class="block text-xs font-semibold text-slate-300 mt-3 mb-1.5">Message facultatif</label>
+      <textarea id="purchase-request-note" rows="3" maxlength="500" placeholder="Une précision pour l’administrateur…" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-amber-500"></textarea>
+      <div class="flex gap-2 mt-5"><button type="button" onclick="fermerDemandeOffre()" class="flex-1 px-4 py-3 rounded-xl bg-slate-800 text-slate-200 text-xs font-bold">Annuler</button><button type="button" id="submit-purchase-request-btn" onclick="envoyerDemandeOffre()" class="flex-1 px-4 py-3 rounded-xl offer-gradient text-slate-950 text-xs font-extrabold"><i class="fa-solid fa-paper-plane mr-1"></i>Envoyer la demande</button></div>
+      <p id="purchase-request-status" role="status" aria-live="polite" class="text-xs text-slate-400 mt-3"></p>
     </div>
   </div>
 
@@ -292,11 +322,14 @@
             <input type="text" id="new-code-name" placeholder="Nom du code..." class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
             <select id="new-code-type" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
               <option value="vip">VIP</option>
-              <option value="extra">Extra</option>
+              <option value="vipExtra">VIP Extra</option>
+              <option value="extra">Admin Extra</option>
             </select>
             <button onclick="creerCodeAdmin()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">Ajouter</button>
           </div>
+          <div class="flex justify-end"><button type="button" onclick="chargerCodesFirebase({initialiserSiVide:false})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[11px] font-semibold"><i class="fa-solid fa-rotate mr-1"></i>Synchroniser Firebase</button></div>
           <div id="codes-list" class="mt-2 space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+          <p class="text-[10px] text-slate-500">Les codes sont stockés sous forme de documents à identifiant haché dans Firestore ; seuls les administrateurs peuvent lister, créer, modifier et supprimer les codes.</p>
         </div>
 
         <!-- Demandes VIP Reçues -->
@@ -307,6 +340,13 @@
           </h4>
           <div id="admin-requests-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
         </div>
+      </div>
+
+      <!-- Demandes des offres VIP (aucun paiement automatisé) -->
+      <div class="glass-panel p-5 rounded-2xl space-y-3">
+        <div class="flex items-center justify-between gap-3"><div><h4 class="text-xs font-semibold text-amber-300 uppercase tracking-wider">Demandes d’offres VIP</h4><p class="text-xs text-slate-500 mt-1">Les visiteurs envoient une demande ; tu gères le paiement et l’attribution du code ensuite.</p></div><span id="purchase-requests-count" class="px-2 py-1 rounded-full text-[10px] bg-amber-500/15 text-amber-200">0 en attente</span></div>
+        <div class="flex justify-end"><button type="button" onclick="renderAdminPurchaseRequests()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i>Actualiser</button></div>
+        <div id="admin-purchase-requests-list" class="grid grid-cols-1 lg:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto"><p class="text-xs text-slate-500 italic p-3">Les demandes apparaîtront ici.</p></div>
       </div>
 
       <!-- Demandes de retrait envoyées par les VIP -->
@@ -443,8 +483,6 @@
     let removalRequestsLocal = lireJSONStockage('removalRequests', []);
     let userFavorites = lireJSONStockage('userFavorites', []);
     let userHiddenProfiles = lireJSONStockage('userHiddenProfiles', []);
-    let savedSearches = lireJSONStockage('savedSearches', []);
-    let searchHistory = lireJSONStockage('searchHistory', []);
     let activityNotifications = lireJSONStockage('activityNotifications', []);
     let correctionRequestsLocal = lireJSONStockage('correctionRequests', []);
     let showFavoritesOnly = false;
@@ -454,6 +492,9 @@
     let adminCorrectionRequestCache = [];
     let activeRemovalProfile = null;
     let adminRemovalRequestCache = [];
+    let adminPurchaseRequestCache = [];
+    let activePurchaseOffer = null;
+    let purchaseRequestsLocal = lireJSONStockage('purchaseRequestsLocal', []);
 
     // Clé stable par profil, même si le nom contient une apostrophe ou des caractères spéciaux.
     // Si data.json fournit un identifiant, celui-ci est prioritaire.
@@ -478,7 +519,8 @@
       return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     }
 
-    function estVip() { return userRole === 'vip' || userRole === 'extra'; }
+    function estVip() { return userRole === 'vip' || userRole === 'vipExtra' || userRole === 'extra'; }
+    function roleLabel(role) { return role === 'extra' ? 'Admin Extra' : role === 'vipExtra' ? 'VIP Extra' : role === 'vip' ? 'VIP' : 'Normal'; }
 
     function normaliserRecherche(value) {
       return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr-FR').trim();
@@ -502,16 +544,16 @@
     }
 
     function actualiserControleVIP() {
+      const vipActif = estVip();
       const banner = document.getElementById('vip-promo-banner');
-      if (banner) banner.classList.toggle('hidden', estVip());
-      document.body.classList.toggle('compact-mode', compactMode && estVip());
-      document.body.dataset.vipTheme = currentTheme;
-      const hiddenBtn = document.getElementById('manage-hidden-btn');
-      const favBtn = document.getElementById('show-favorites-btn');
-      const saveBtn = document.getElementById('save-search-btn');
+      const vipTools = document.getElementById('vip-tools-section');
+      if (banner) banner.classList.toggle('hidden', vipActif);
+      if (vipTools) vipTools.classList.toggle('hidden', !vipActif);
+      if (!vipActif) showFavoritesOnly = false;
+      document.body.classList.toggle('compact-mode', compactMode && vipActif);
+      document.body.dataset.vipTheme = vipActif ? currentTheme : 'blue';
       const themeSelect = document.getElementById('theme-select');
       const compactBtn = document.getElementById('compact-toggle-btn');
-      [hiddenBtn, favBtn, saveBtn, themeSelect, compactBtn].forEach(el => { if (el) el.classList.toggle('opacity-70', !estVip()); });
       if (themeSelect) themeSelect.value = currentTheme;
       const badgeSelect = document.getElementById('cosmetic-badge-select');
       if (badgeSelect) badgeSelect.value = cosmeticBadge;
@@ -519,36 +561,6 @@
       if (compactBtn) compactBtn.innerHTML = compactMode && estVip() ? '<i class="fa-solid fa-grip mr-1"></i>Vue complète' : '<i class="fa-solid fa-grip mr-1"></i>Vue compacte';
       actualiserCompteurFavoris();
       actualiserCompteurActivite();
-      actualiserListeRecherches();
-    }
-
-    function actualiserListeRecherches() {
-      const select = document.getElementById('saved-search-select');
-      if (select) {
-        const current = select.value;
-        select.innerHTML = '<option value="">Choisir une recherche…</option>';
-        savedSearches.forEach((item, index) => {
-          const option = document.createElement('option'); option.value = String(index); option.textContent = item.name || `Recherche ${index + 1}`; select.appendChild(option);
-        });
-        if (current && Number(current) < savedSearches.length) select.value = current;
-      }
-      const history = document.getElementById('search-history-select');
-      if (history) {
-        const current = history.value;
-        history.innerHTML = '<option value="">Reprendre une recherche…</option>';
-        searchHistory.forEach((item, index) => {
-          const option = document.createElement('option'); option.value = String(index); option.textContent = item || '(recherche vide)'; history.appendChild(option);
-        });
-        if (current && Number(current) < searchHistory.length) history.value = current;
-      }
-    }
-
-    function enregistrerHistoriqueRecherche() {
-      const value = String(document.getElementById('search-input')?.value || '').trim();
-      if (!value) return;
-      searchHistory = [value, ...searchHistory.filter(item => item !== value)].slice(0, 8);
-      enregistrerJSONStockage('searchHistory', searchHistory);
-      actualiserListeRecherches();
     }
 
     function basculerFavoris() {
@@ -619,36 +631,6 @@
       ajouterActivite('Affichage modifié', compactMode ? 'Vue compacte activée.' : 'Vue complète activée.');
     }
 
-    function enregistrerRecherche() {
-      if (!estVip()) { openVipModal(); return; }
-      const name = prompt('Donne un nom à cette recherche :', `Ma recherche ${savedSearches.length + 1}`);
-      if (!name || !name.trim()) return;
-      const saved = { name: name.trim().slice(0,60), search: document.getElementById('search-input').value, role: document.getElementById('filter-role').value, className: document.getElementById('filter-class').value, sort: document.getElementById('sort-order').value, date: new Date().toISOString() };
-      savedSearches.unshift(saved); savedSearches = savedSearches.slice(0, 20);
-      enregistrerJSONStockage('savedSearches', savedSearches); actualiserListeRecherches();
-      const select = document.getElementById('saved-search-select'); if (select) select.value = '0';
-      ajouterActivite('Recherche enregistrée', saved.name);
-    }
-
-    function appliquerRechercheEnregistree(index) {
-      if (!estVip()) { openVipModal(); return; }
-      const item = savedSearches[Number(index)]; if (!item) return;
-      document.getElementById('search-input').value = item.search || '';
-      document.getElementById('filter-role').value = item.role || 'ALL';
-      document.getElementById('filter-class').value = item.className || 'ALL';
-      document.getElementById('sort-order').value = item.sort || 'AZ';
-      document.getElementById('clear-search').classList.toggle('hidden', !item.search);
-      enregistrerHistoriqueRecherche(); currentPage = 1; renderCards();
-      ajouterActivite('Recherche réouverte', item.name || 'Recherche enregistrée');
-    }
-
-    function appliquerRechercheHistorique(index) {
-      const query = searchHistory[Number(index)]; if (query === undefined) return;
-      document.getElementById('search-input').value = query;
-      document.getElementById('clear-search').classList.toggle('hidden', !query);
-      currentPage = 1; renderCards();
-    }
-
     function actualiserBadgeDecoratif() {
       const badge = document.getElementById('user-cosmetic-badge');
       if (!badge) return;
@@ -684,6 +666,7 @@
     }
 
     function ouvrirCentreActivite() {
+      if (!estVip()) { openVipModal(); return; }
       const list = document.getElementById('activity-list'); list.innerHTML = '';
       if (!activityNotifications.length) { const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Aucune activité enregistrée sur cet appareil.'; list.appendChild(p); }
       activityNotifications.forEach(item => {
@@ -696,7 +679,7 @@
       document.getElementById('activity-modal').classList.remove('hidden');
     }
     function fermerCentreActivite() { document.getElementById('activity-modal').classList.add('hidden'); }
-    function effacerCentreActivite() { activityNotifications = []; enregistrerJSONStockage('activityNotifications', activityNotifications); ouvrirCentreActivite(); actualiserCompteurActivite(); }
+    function effacerCentreActivite() { if (!estVip()) { openVipModal(); return; } activityNotifications = []; enregistrerJSONStockage('activityNotifications', activityNotifications); ouvrirCentreActivite(); actualiserCompteurActivite(); }
 
     async function signalerCorrection(item) {
       const reason = prompt(`Décris la correction à apporter au profil « ${String(item.displayName || 'Profil').slice(0,120)} » :`);
@@ -775,8 +758,13 @@
 
       if (userRole === 'extra') {
         badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1.5";
-        badge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> VIP Extra (Admin)`;
+        badge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> Admin Extra`;
         adminBtn.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
+      } else if (userRole === 'vipExtra') {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-violet-500/20 text-violet-200 border border-violet-500/30 flex items-center gap-1.5";
+        badge.innerHTML = `<i class="fa-solid fa-gem"></i> VIP Extra`;
+        adminBtn.classList.add('hidden');
         logoutBtn.classList.remove('hidden');
       } else if (userRole === 'vip') {
         badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5";
@@ -942,13 +930,16 @@
         card.innerHTML = cardHTML;
         const actionBar = document.createElement('div');
         actionBar.className = 'mt-4 pt-3 border-t border-slate-800 flex flex-wrap gap-2';
-        const favoriteButton = document.createElement('button');
-        favoriteButton.type = 'button';
-        favoriteButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 text-[11px] font-semibold';
-        const isFavorite = userFavorites.includes(getProfileKey(item));
-        favoriteButton.innerHTML = `<i class="fa-${isFavorite ? 'solid' : 'regular'} fa-star mr-1"></i>${isFavorite ? 'Favori' : 'Ajouter aux favoris'}`;
-        favoriteButton.addEventListener('click', () => basculerFavori(item));
-        actionBar.appendChild(favoriteButton);
+        // Aucun bouton Favoris n'est affiché aux visiteurs en mode normal.
+        if (estVip()) {
+          const favoriteButton = document.createElement('button');
+          favoriteButton.type = 'button';
+          favoriteButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 text-[11px] font-semibold';
+          const isFavorite = userFavorites.includes(getProfileKey(item));
+          favoriteButton.innerHTML = `<i class="fa-${isFavorite ? 'solid' : 'regular'} fa-star mr-1"></i>${isFavorite ? 'Favori' : 'Ajouter aux favoris'}`;
+          favoriteButton.addEventListener('click', () => basculerFavori(item));
+          actionBar.appendChild(favoriteButton);
+        }
 
         if (estVip()) {
           const hideButton = document.createElement('button');
@@ -992,7 +983,7 @@
             <div class="text-center py-4">
               <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center text-xl"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
               <h4 class="font-extrabold text-white text-base">Ton annuaire, à ta façon</h4>
-              <p class="text-xs text-slate-300 mt-2">Sans bannières promo, favoris, profils masqués pour toi et recherches enregistrées.</p>
+              <p class="text-xs text-slate-300 mt-2">Sans promotions intégrées, avec favoris privés, profils masqués pour toi et personnalisation.</p>
               <button type="button" onclick="openVipModal()" class="mt-4 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition"><i class="fa-solid fa-crown mr-1"></i>Découvrir le VIP</button>
             </div>
             <p class="text-[10px] text-slate-500 text-center">Les profils retirés ou masqués par l’administration restent indisponibles.</p>
@@ -1015,36 +1006,123 @@
       window.scrollTo({ top: 200, behavior: 'smooth' });
     }
 
-    function openVipModal() { document.getElementById('vip-modal').classList.remove('hidden'); }
-    function closeVipModal() { document.getElementById('vip-modal').classList.add('hidden'); }
+    function openVipModal() { document.getElementById('vip-modal').classList.remove('hidden'); document.getElementById('vip-modal').classList.add('flex'); }
+    function closeVipModal() { document.getElementById('vip-modal').classList.add('hidden'); document.getElementById('vip-modal').classList.remove('flex'); }
 
-    function validerCodeVip() {
-      const code = document.getElementById('vip-code-input').value.trim();
-      if (customCodes[code]) {
-        userRole = customCodes[code];
-        localStorage.setItem('userRole', userRole);
-        closeVipModal();
-        ajouterActivite('Grade activé', `Mode ${userRole === 'extra' ? 'VIP Extra' : 'VIP'} activé sur cet appareil.`);
-        updateInterfaceRole();
-      } else {
-        alert("Code VIP invalide.");
+    function choisirOffreGratuite() {
+      userRole = 'normal';
+      try { localStorage.setItem('userRole', 'normal'); } catch (_) {}
+      closeVipModal();
+      updateInterfaceRole();
+      ajouterActivite('Offre choisie', 'Mode Normal gratuit activé.');
+    }
+
+    function demanderOffre(plan, price) {
+      if (!['vip', 'vipExtra'].includes(plan)) return;
+      activePurchaseOffer = { plan, price: Number(price), label: plan === 'vipExtra' ? 'VIP Extra' : 'VIP' };
+      document.getElementById('purchase-request-offer').textContent = `${activePurchaseOffer.label} — ${activePurchaseOffer.price} €`;
+      document.getElementById('purchase-request-name').value = '';
+      document.getElementById('purchase-request-email').value = '';
+      document.getElementById('purchase-request-note').value = '';
+      document.getElementById('purchase-request-status').textContent = '';
+      closeVipModal();
+      const modal = document.getElementById('purchase-request-modal');
+      modal.classList.remove('hidden');
+      document.getElementById('purchase-request-name').focus();
+    }
+
+    function fermerDemandeOffre() {
+      const modal = document.getElementById('purchase-request-modal');
+      if (modal) modal.classList.add('hidden');
+      activePurchaseOffer = null;
+    }
+
+    async function envoyerDemandeOffre() {
+      if (!activePurchaseOffer) return;
+      const name = document.getElementById('purchase-request-name').value.trim();
+      const email = document.getElementById('purchase-request-email').value.trim();
+      const note = document.getElementById('purchase-request-note').value.trim();
+      const status = document.getElementById('purchase-request-status');
+      const button = document.getElementById('submit-purchase-request-btn');
+      if (!name) { status.textContent = 'Indique un nom ou pseudonyme pour que l’administrateur retrouve la demande.'; status.className = 'text-xs text-rose-300 mt-3'; return; }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { status.textContent = 'Vérifie le format de l’adresse e-mail.'; status.className = 'text-xs text-rose-300 mt-3'; return; }
+      const payload = {
+        plan: activePurchaseOffer.plan,
+        planName: activePurchaseOffer.label,
+        priceEuros: activePurchaseOffer.price,
+        name: name.slice(0, 100),
+        email: email.slice(0, 254),
+        message: note.slice(0, 500),
+        status: 'pending'
+      };
+      button.disabled = true;
+      button.classList.add('opacity-60', 'cursor-not-allowed');
+      status.textContent = 'Envoi de la demande…';
+      status.className = 'text-xs text-sky-300 mt-3';
+      try {
+        if (cloudEstConfigure()) {
+          await firebaseDb.collection('purchase_requests').add({
+            ...payload,
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+          });
+          ajouterActivite('Demande VIP envoyée', `${payload.planName} — ${payload.priceEuros} €`);
+          status.textContent = 'Demande envoyée à l’administration. Aucun paiement n’a été effectué.';
+          status.className = 'text-xs text-emerald-300 mt-3';
+          alert('Demande envoyée à l’administrateur. Il se chargera de la suite. Aucun paiement n’a été effectué ici.');
+          fermerDemandeOffre();
+        } else {
+          purchaseRequestsLocal.unshift({ ...payload, id: `local-${Date.now()}`, createdAt: new Date().toISOString() });
+          if (!enregistrerJSONStockage('purchaseRequestsLocal', purchaseRequestsLocal)) throw new Error('Le navigateur ne permet pas de sauvegarder cette demande.');
+          status.textContent = 'Demande sauvegardée uniquement sur cet appareil. Elle ne sera pas visible par l’administrateur tant que Firebase n’est pas configuré.';
+          status.className = 'text-xs text-amber-300 mt-3';
+          alert('Firebase n’est pas configuré : la demande est enregistrée sur cet appareil uniquement. Configure Firebase pour l’envoyer à l’administration.');
+        }
+      } catch (error) {
+        status.textContent = `Échec de l’envoi : ${error.message || error}. Vérifie les règles Firestore purchase_requests.`;
+        status.className = 'text-xs text-rose-300 mt-3';
+      } finally {
+        button.disabled = false;
+        button.classList.remove('opacity-60', 'cursor-not-allowed');
       }
     }
 
-    function envoyerDemandeVip() {
-      const name = document.getElementById('req-name').value.trim();
-      const msg = document.getElementById('req-msg').value.trim();
-      if (!name || !msg) return alert("Veuillez remplir votre nom et votre message.");
-      vipRequests.push({ name, msg, date: new Date().toLocaleDateString() });
-      localStorage.setItem('vipRequests', JSON.stringify(vipRequests));
-      document.getElementById('req-name').value = '';
-      document.getElementById('req-msg').value = '';
+    async function codeVipHash(rawCode) {
+      const code = String(rawCode || '').trim().toUpperCase();
+      if (!code) throw new Error('Entre un code.');
+      if (!window.crypto || !window.crypto.subtle) throw new Error('La vérification des codes nécessite HTTPS ou un serveur local sécurisé.');
+      const buffer = await window.crypto.subtle.digest('SHA-256', new TextEncoder().encode(code));
+      return Array.from(new Uint8Array(buffer), byte => byte.toString(16).padStart(2, '0')).join('');
+    }
+
+    async function validerCodeVip() {
+      const code = document.getElementById('vip-code-input').value.trim().toUpperCase();
+      if (!code) return alert('Entre un code VIP ou Extra.');
+      let role = null;
+      if (cloudEstConfigure()) {
+        try {
+          const hash = await codeVipHash(code);
+          const doc = await firebaseDb.collection('vip_codes').doc(hash).get();
+          if (doc.exists) {
+            const data = doc.data() || {};
+            if (data.active !== false && ['vip', 'vipExtra', 'extra'].includes(data.role)) role = data.role;
+          }
+        } catch (error) {
+          return alert(`Impossible de vérifier le code en ligne : ${error.message || error}. Vérifie la configuration Firebase et les règles vip_codes.`);
+        }
+      } else {
+        role = customCodes[code] || null;
+      }
+      if (!role) return alert(cloudEstConfigure() ? 'Code invalide ou désactivé dans Firebase.' : 'Code invalide. Configure Firebase pour synchroniser les codes entre appareils.');
+      userRole = role;
+      try { localStorage.setItem('userRole', role); } catch (_) {}
       closeVipModal();
-      alert("Demande envoyée !");
+      updateInterfaceRole();
+      ajouterActivite('Grade activé', `Mode ${roleLabel(role)} activé sur cet appareil.`);
+      alert(`Accès activé : ${roleLabel(role)}. Sur un autre appareil, saisis de nouveau le code.`);
     }
 
     function ouvrirDemandeRetrait(item) {
-      if (userRole !== 'vip' && userRole !== 'extra') {
+      if (!estVip()) {
         alert('Cette fonction est réservée aux comptes VIP.');
         return;
       }
@@ -1068,7 +1146,7 @@
 
     async function envoyerDemandeRetrait() {
       if (!activeRemovalProfile) return alert('Sélectionne d’abord un profil.');
-      if (userRole !== 'vip' && userRole !== 'extra') return alert('Cette fonction est réservée aux comptes VIP.');
+      if (!estVip()) return alert('Cette fonction est réservée aux comptes VIP.');
 
       const reasonInput = document.getElementById('removal-request-reason');
       const reason = reasonInput.value.trim();
@@ -1123,27 +1201,92 @@
     function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); renderAdminPanel(); }
     function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
 
-    function creerCodeAdmin() {
-      const name = document.getElementById('new-code-name').value.trim();
-      const type = document.getElementById('new-code-type').value;
-      if (name) {
-        customCodes[name] = type;
-        localStorage.setItem('customCodes', JSON.stringify(customCodes));
-        document.getElementById('new-code-name').value = '';
+    async function enregistrerCodeDansCloud(code, role) {
+      if (!cloudEstConfigure() || !utilisateurEstAdminCloud()) return false;
+      const hash = await codeVipHash(code);
+      await firebaseDb.collection('vip_codes').doc(hash).set({
+        code: String(code).trim().toUpperCase(),
+        role,
+        active: true,
+        updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+      return true;
+    }
+
+    async function chargerCodesFirebase(options = {}) {
+      if (!cloudEstConfigure() || !utilisateurEstAdminCloud()) return false;
+      try {
+        let snapshot = await firebaseDb.collection('vip_codes').get();
+        if (snapshot.empty && options.initialiserSiVide && Object.keys(customCodes || {}).length > 0) {
+          const importer = confirm('Aucun code n’existe encore dans Firebase. Importer les codes déjà présents sur ce navigateur ? Supprime ensuite les anciens codes trop faciles à deviner.');
+          if (importer) {
+            for (const [code, role] of Object.entries(customCodes)) {
+              if (['vip', 'vipExtra', 'extra'].includes(role)) await enregistrerCodeDansCloud(code, role);
+            }
+            snapshot = await firebaseDb.collection('vip_codes').get();
+          }
+        }
+        const cloudCodes = {};
+        snapshot.forEach(doc => {
+          const data = doc.data() || {};
+          if (data.active !== false && data.code && ['vip', 'vipExtra', 'extra'].includes(data.role)) cloudCodes[String(data.code).toUpperCase()] = data.role;
+        });
+        customCodes = cloudCodes;
+        enregistrerJSONStockage('customCodes', customCodes);
         renderAdminPanel();
+        afficherEtatCloud(`✓ ${Object.keys(customCodes).length} code(s) VIP/Extra synchronisé(s) depuis Firebase.`);
+        return true;
+      } catch (error) {
+        afficherEtatCloud(`Impossible de synchroniser les codes : ${error.message || error}. Vérifie les règles vip_codes.`, true);
+        return false;
       }
     }
 
-    function supprimerCode(code) {
-      delete customCodes[code];
-      localStorage.setItem('customCodes', JSON.stringify(customCodes));
-      renderAdminPanel();
+    async function creerCodeAdmin() {
+      const input = document.getElementById('new-code-name');
+      const name = input.value.trim().toUpperCase();
+      const type = document.getElementById('new-code-type').value;
+      if (!/^[A-Z0-9_-]{6,40}$/.test(name)) return alert('Utilise 6 à 40 caractères : lettres sans accent, chiffres, tirets ou tirets bas.');
+      if (!['vip', 'vipExtra', 'extra'].includes(type)) return alert('Type de code invalide.');
+      try {
+        if (cloudEstConfigure()) {
+          if (!utilisateurEstAdminCloud()) return alert('Connecte le compte administrateur Firebase dans la section Sauvegarde cloud pour synchroniser les codes.');
+          await enregistrerCodeDansCloud(name, type);
+        }
+        customCodes[name] = type;
+        enregistrerJSONStockage('customCodes', customCodes);
+        input.value = '';
+        renderAdminPanel();
+        alert(cloudEstConfigure() ? 'Code ajouté et synchronisé dans Firebase.' : 'Code ajouté localement. Configure Firebase pour le partager entre appareils.');
+      } catch (error) { alert(`Impossible d’enregistrer le code : ${error.message || error}`); }
     }
 
-    function changerTypeCode(code, newType) {
-      customCodes[code] = newType;
-      localStorage.setItem('customCodes', JSON.stringify(customCodes));
-      renderAdminPanel();
+    async function supprimerCode(code) {
+      if (!confirm(`Supprimer le code ${code} ?`)) return;
+      try {
+        if (cloudEstConfigure()) {
+          if (!utilisateurEstAdminCloud()) return alert('Connecte le compte administrateur Firebase.');
+          const hash = await codeVipHash(code);
+          await firebaseDb.collection('vip_codes').doc(hash).delete();
+        }
+        delete customCodes[code];
+        enregistrerJSONStockage('customCodes', customCodes);
+        renderAdminPanel();
+      } catch (error) { alert(`Impossible de supprimer le code : ${error.message || error}`); }
+    }
+
+    async function changerTypeCode(code, newType) {
+      if (!['vip', 'vipExtra', 'extra'].includes(newType)) return;
+      try {
+        if (cloudEstConfigure()) {
+          if (!utilisateurEstAdminCloud()) return alert('Connecte le compte administrateur Firebase.');
+          const hash = await codeVipHash(code);
+          await firebaseDb.collection('vip_codes').doc(hash).set({ code, role: newType, active: true, updatedAt: window.firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
+        }
+        customCodes[code] = newType;
+        enregistrerJSONStockage('customCodes', customCodes);
+        renderAdminPanel();
+      } catch (error) { alert(`Impossible de modifier ce code : ${error.message || error}`); }
     }
 
     function supprimerDemande(index) {
@@ -1164,35 +1307,98 @@
 
     function renderAdminPanel() {
       const listDiv = document.getElementById('codes-list');
-      listDiv.innerHTML = Object.entries(customCodes).map(([c, t]) => `
-        <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
-          <div><strong class="text-white">${c}</strong> <span class="ml-2 px-2 py-0.5 rounded text-[10px] ${t === 'extra' ? 'bg-purple-500/20 text-purple-300' : 'bg-amber-500/20 text-amber-300'}">${t}</span></div>
-          <div class="flex items-center gap-2">
-            <select onchange="changerTypeCode('${c}', this.value)" class="bg-slate-800 text-slate-300 rounded px-2 py-1 text-[11px] outline-none">
-              <option value="vip" ${t === 'vip' ? 'selected' : ''}>VIP</option>
-              <option value="extra" ${t === 'extra' ? 'selected' : ''}>Extra</option>
-            </select>
-            <button onclick="supprimerCode('${c}')" class="text-red-400 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>
-      `).join('');
+      listDiv.innerHTML = '';
+      const entries = Object.entries(customCodes);
+      if (!entries.length) {
+        const empty = document.createElement('p'); empty.className = 'text-xs text-slate-500 italic p-3'; empty.textContent = 'Aucun code local chargé. Connecte Firebase pour synchroniser les codes.'; listDiv.appendChild(empty);
+      }
+      entries.forEach(([code, type]) => {
+        const row = document.createElement('div'); row.className = 'flex flex-wrap items-center justify-between gap-2 bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs';
+        const label = document.createElement('div');
+        const strong = document.createElement('strong'); strong.className = 'text-white'; strong.textContent = code;
+        const tag = document.createElement('span'); tag.className = `ml-2 px-2 py-0.5 rounded text-[10px] ${type === 'extra' ? 'bg-purple-500/20 text-purple-300' : type === 'vipExtra' ? 'bg-violet-500/20 text-violet-200' : 'bg-amber-500/20 text-amber-300'}`;
+        tag.textContent = roleLabel(type); label.append(strong, tag);
+        const controls = document.createElement('div'); controls.className = 'flex items-center gap-2';
+        const select = document.createElement('select'); select.className = 'bg-slate-800 text-slate-300 rounded px-2 py-1 text-[11px] outline-none';
+        [['vip','VIP'],['vipExtra','VIP Extra'],['extra','Admin Extra']].forEach(([value, text]) => { const opt = document.createElement('option'); opt.value = value; opt.textContent = text; opt.selected = value === type; select.appendChild(opt); });
+        select.addEventListener('change', () => changerTypeCode(code, select.value));
+        const del = document.createElement('button'); del.className = 'text-red-400 px-2 py-1'; del.title = 'Supprimer le code'; del.innerHTML = '<i class="fa-solid fa-trash"></i>'; del.addEventListener('click', () => supprimerCode(code));
+        controls.append(select, del); row.append(label, controls); listDiv.appendChild(row);
+      });
 
       document.getElementById('req-count-badge').textContent = vipRequests.length;
       const reqDiv = document.getElementById('admin-requests-list');
-      reqDiv.innerHTML = vipRequests.length === 0 ? `<div class="text-xs text-slate-500 italic p-3 text-center">Aucune demande.</div>` : vipRequests.map((req, idx) => `
+      reqDiv.innerHTML = vipRequests.length === 0 ? `<div class="text-xs text-slate-500 italic p-3 text-center">Aucune demande manuelle locale.</div>` : vipRequests.map((req, idx) => `
         <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 text-xs">
-          <div class="flex justify-between items-center"><strong class="text-amber-300">${req.name}</strong><span class="text-[10px] text-slate-500">${req.date}</span></div>
-          <p class="text-slate-300 italic bg-slate-950 p-2 rounded">« ${req.msg} »</p>
-          <div class="flex justify-end gap-2">
-            <button onclick="accepterDemande(${idx}, '${req.name.replace(/'/g, "\\'")}')" class="px-3 py-1 bg-emerald-600 text-white rounded">Accepter</button>
-            <button onclick="supprimerDemande(${idx})" class="px-3 py-1 bg-slate-800 text-slate-300 rounded">Refuser</button>
-          </div>
+          <div class="flex justify-between items-center gap-2"><strong class="text-amber-300">${echapperHTML(req.name)}</strong><span class="text-[10px] text-slate-500">${echapperHTML(req.date)}</span></div>
+          <p class="text-slate-300 italic bg-slate-950 p-2 rounded">« ${echapperHTML(req.msg)} »</p>
+          <div class="flex justify-end gap-2"><button onclick="supprimerDemande(${idx})" class="px-3 py-1 bg-slate-800 text-slate-300 rounded">Retirer</button></div>
         </div>
       `).join('');
 
+      renderAdminPurchaseRequests();
       renderAdminVisibilityList();
       renderAdminRemovalRequests();
       renderAdminCorrectionRequests();
+    }
+
+    async function renderAdminPurchaseRequests() {
+      const list = document.getElementById('admin-purchase-requests-list');
+      const count = document.getElementById('purchase-requests-count');
+      if (!list || !count) return;
+      list.innerHTML = '';
+      let requests = [];
+      if (cloudEstConfigure()) {
+        if (!utilisateurEstAdminCloud()) {
+          count.textContent = 'Connexion admin requise';
+          const message = document.createElement('p'); message.className = 'text-xs text-slate-500 italic p-3'; message.textContent = 'Connecte le compte administrateur Firebase pour voir les demandes envoyées depuis tous les appareils.'; list.appendChild(message); return;
+        }
+        try {
+          const snap = await firebaseDb.collection('purchase_requests').orderBy('createdAt', 'desc').limit(100).get();
+          requests = snap.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'cloud' }));
+        } catch (error) {
+          count.textContent = 'Erreur'; const message = document.createElement('p'); message.className = 'text-xs text-rose-300 p-3'; message.textContent = `Chargement impossible : ${error.message || error}. Vérifie les règles purchase_requests.`; list.appendChild(message); return;
+        }
+      } else {
+        requests = purchaseRequestsLocal.map(req => ({ ...req, source: 'local' }));
+      }
+      adminPurchaseRequestCache = requests;
+      const pending = requests.filter(req => (req.status || 'pending') === 'pending').length;
+      count.textContent = `${pending} en attente`;
+      if (!requests.length) { const empty = document.createElement('p'); empty.className = 'text-xs text-slate-500 italic p-3'; empty.textContent = 'Aucune demande d’offre pour le moment.'; list.appendChild(empty); return; }
+      requests.forEach(req => {
+        const card = document.createElement('div'); card.className = 'admin-request-card space-y-2';
+        const title = document.createElement('div'); title.className = 'flex items-start justify-between gap-3';
+        const plan = document.createElement('strong'); plan.className = 'text-sm text-amber-200'; plan.textContent = `${req.planName || req.plan || 'Offre VIP'} — ${Number(req.priceEuros || 0)} €`;
+        const state = document.createElement('span'); state.className = 'text-[10px] px-2 py-1 rounded-full bg-slate-800 text-slate-300'; state.textContent = req.status || 'pending';
+        title.append(plan, state);
+        const meta = document.createElement('p'); meta.className = 'text-xs text-slate-300'; meta.textContent = `${req.name || 'Sans nom'}${req.email ? ` · ${req.email}` : ''}`;
+        const msg = document.createElement('p'); msg.className = 'text-xs text-slate-400 whitespace-pre-wrap break-words'; msg.textContent = req.message || 'Aucun message.';
+        card.append(title, meta, msg);
+        if ((req.status || 'pending') === 'pending') {
+          const actions = document.createElement('div'); actions.className = 'flex justify-end gap-2 pt-2';
+          const done = document.createElement('button'); done.className = 'px-3 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold'; done.textContent = 'Marquer traitée'; done.addEventListener('click', () => traiterDemandeOffre(req.id, 'processed'));
+          const reject = document.createElement('button'); reject.className = 'px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold'; reject.textContent = 'Refuser'; reject.addEventListener('click', () => traiterDemandeOffre(req.id, 'rejected'));
+          actions.append(done, reject); card.appendChild(actions);
+        }
+        list.appendChild(card);
+      });
+    }
+
+    async function traiterDemandeOffre(id, status) {
+      const req = adminPurchaseRequestCache.find(item => item.id === id);
+      if (!req || !['processed','rejected'].includes(status)) return;
+      if (cloudEstConfigure() && !utilisateurEstAdminCloud()) return alert('Connecte le compte administrateur Firebase.');
+      if (!confirm(status === 'processed' ? 'Marquer cette demande comme traitée ? Tu attribueras le code VIP séparément.' : 'Refuser cette demande ?')) return;
+      try {
+        if (req.source === 'cloud' && cloudEstConfigure()) {
+          await firebaseDb.collection('purchase_requests').doc(id).update({ status, reviewedAt: window.firebase.firestore.FieldValue.serverTimestamp() });
+        } else {
+          purchaseRequestsLocal = purchaseRequestsLocal.map(item => item.id === id ? { ...item, status, reviewedAt: new Date().toISOString() } : item);
+          enregistrerJSONStockage('purchaseRequestsLocal', purchaseRequestsLocal);
+        }
+        await renderAdminPurchaseRequests();
+      } catch (error) { alert(`Impossible de traiter cette demande : ${error.message || error}`); }
     }
 
     async function renderAdminRemovalRequests() {
@@ -1468,6 +1674,8 @@
         try { localStorage.setItem('firebaseAdminEmail', email); } catch (_) {}
         document.getElementById('cloud-admin-password').value = '';
         await chargerVisibiliteCloud({ apresConnexion: true });
+        await chargerCodesFirebase({ initialiserSiVide: true });
+        await renderAdminPurchaseRequests();
         await renderAdminRemovalRequests();
       } catch (erreur) {
         document.getElementById('cloud-admin-password').value = '';
@@ -1606,15 +1814,12 @@
       actualiserControleVIP();
       document.body.classList.toggle('compact-mode', compactMode && estVip());
       document.body.dataset.vipTheme = currentTheme;
-      actualiserListeRecherches();
 
       searchInput.addEventListener('input', () => {
         clearSearch.classList.toggle('hidden', searchInput.value.length === 0);
         currentPage = 1;
         renderCards();
       });
-      searchInput.addEventListener('change', enregistrerHistoriqueRecherche);
-      searchInput.addEventListener('keydown', event => { if (event.key === 'Enter') enregistrerHistoriqueRecherche(); });
 
       clearSearch.addEventListener('click', () => {
         searchInput.value = '';
@@ -1627,8 +1832,6 @@
       document.getElementById('filter-class').addEventListener('change', () => { currentPage = 1; renderCards(); });
       document.getElementById('sort-order').addEventListener('change', () => { currentPage = 1; renderCards(); });
       document.getElementById('admin-search-profile').addEventListener('input', renderAdminVisibilityList);
-      document.getElementById('saved-search-select').addEventListener('change', e => { if (e.target.value !== '') appliquerRechercheEnregistree(e.target.value); });
-      document.getElementById('search-history-select').addEventListener('change', e => { if (e.target.value !== '') appliquerRechercheHistorique(e.target.value); });
       document.getElementById('theme-select').addEventListener('change', e => changerTheme(e.target.value));
       document.getElementById('cosmetic-badge-select').addEventListener('change', e => changerBadgeDecoratif(e.target.value));
 
