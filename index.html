@@ -314,7 +314,6 @@
 
         cardHTML += `</div>`;
 
-        // Section Relations (Parents pour l'élève / Enfants pour le parent)
         if (item.relations && item.relations.length > 0) {
           const isParentRole = item.role === 'Parent';
           const title = isParentRole ? 'Enfant(s) rattaché(s)' : 'Responsable(s)';
