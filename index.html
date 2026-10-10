@@ -157,6 +157,29 @@
     </div>
   </div>
 
+  <!-- MODALE VIP : DEMANDE DE RETRAIT D'UN PROFIL -->
+  <div id="removal-request-modal" class="fixed inset-0 bg-slate-950/85 z-[60] hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-rose-500/30 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button type="button" onclick="fermerDemandeRetrait()" class="absolute top-4 right-4 text-slate-400 hover:text-white" aria-label="Fermer"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <div class="text-center mb-5">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-rose-500/15 text-rose-300 flex items-center justify-center text-xl"><i class="fa-solid fa-user-minus"></i></div>
+        <h3 class="text-xl font-bold text-white">Demander le retrait d'un profil</h3>
+        <p class="text-xs text-slate-400 mt-2">Ta demande sera envoyée à l'administration. Le profil ne sera pas masqué automatiquement.</p>
+      </div>
+      <div class="rounded-xl bg-slate-950 border border-slate-800 p-3 mb-4">
+        <p class="text-[10px] uppercase tracking-wider text-slate-500">Profil concerné</p>
+        <p id="removal-profile-label" class="text-sm text-white font-semibold mt-1">Aucun profil sélectionné</p>
+      </div>
+      <label for="removal-request-reason" class="block text-xs text-slate-300 font-semibold mb-2">Explique pourquoi ce profil devrait être retiré (10 caractères minimum)</label>
+      <textarea id="removal-request-reason" maxlength="1000" rows="4" placeholder="Explique la raison de la demande…" class="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-rose-500 resize-y"></textarea>
+      <div class="flex flex-wrap justify-end gap-2 mt-4">
+        <button type="button" onclick="fermerDemandeRetrait()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold">Annuler</button>
+        <button id="send-removal-request-btn" type="button" onclick="envoyerDemandeRetrait()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"><i class="fa-solid fa-paper-plane mr-1"></i> Envoyer la demande</button>
+      </div>
+      <p id="removal-request-status" role="status" aria-live="polite" class="text-xs text-slate-400 mt-3"></p>
+    </div>
+  </div>
+
   <!-- PANNEAU ADMIN EXTRA PLEIN ÉCRAN -->
   <div id="admin-modal" class="fixed inset-0 w-screen h-screen bg-slate-950 z-50 hidden flex flex-col p-6 overflow-hidden">
     <div class="flex justify-between items-center pb-4 border-b border-slate-800 shrink-0">
@@ -164,7 +187,7 @@
         <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg"><i class="fa-solid fa-shield-halved"></i></div>
         <div>
           <h3 class="text-lg font-bold text-white">Panneau VIP Extra (Administration Complète)</h3>
-          <p class="text-xs text-slate-400">Gérez les codes, traitez les demandes VIP et configurez la visibilité des profils.</p>
+          <p class="text-xs text-slate-400">Gérez les codes, examinez les demandes VIP et les demandes de retrait, puis configurez la visibilité des profils.</p>
         </div>
       </div>
       <button onclick="closeAdminModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-2">
@@ -197,6 +220,23 @@
             <span id="req-count-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300">0</span>
           </h4>
           <div id="admin-requests-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+
+      <!-- Demandes de retrait envoyées par les VIP -->
+      <div class="glass-panel p-5 rounded-2xl space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h4 class="text-xs font-semibold text-rose-300 uppercase tracking-wider">Demandes de retrait des profils</h4>
+            <p class="text-xs text-slate-500 mt-1">Examine les demandes. Une approbation masque le profil dans l'annuaire, sans effacer le fichier source data.json.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="removal-requests-count" class="px-2 py-1 rounded-full text-[10px] bg-rose-500/15 text-rose-200">0 en attente</span>
+            <button type="button" onclick="renderAdminRemovalRequests()" class="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold"><i class="fa-solid fa-rotate mr-1"></i> Actualiser</button>
+          </div>
+        </div>
+        <div id="admin-removal-requests-list" class="grid grid-cols-1 lg:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+          <p class="text-xs text-slate-500 italic p-3">Les demandes apparaîtront ici.</p>
         </div>
       </div>
 
@@ -244,8 +284,7 @@
       messagingSenderId: '365757198260',
       appId: '1:365757198260:web:532402b499ecba9c8c0ce1'
     };
-    // Doit correspondre exactement à l’adresse e-mail inscrite dans firestore.rules.
-    const FIREBASE_ADMIN_EMAIL = 'philippe.alopo@gmail.com';
+    // Le compte est saisi dans le panneau cloud. Les règles Firestore restent l'autorité de sécurité.
 
     const firebaseConfigOk = Boolean(
       window.firebase &&
@@ -309,6 +348,9 @@
     let customCodes = lireJSONStockage('customCodes', { 'VIP2026': 'vip', 'ADMINEXTRA': 'extra' });
     let hiddenProfiles = lireJSONStockage('hiddenProfiles', {});
     let vipRequests = lireJSONStockage('vipRequests', []);
+    let removalRequestsLocal = lireJSONStockage('removalRequests', []);
+    let activeRemovalProfile = null;
+    let adminRemovalRequestCache = [];
 
     // Clé stable par profil, même si le nom contient une apostrophe ou des caractères spéciaux.
     // Si data.json fournit un identifiant, celui-ci est prioritaire.
@@ -434,6 +476,7 @@
 
       let filtered = rawData.filter(item => {
         const hideLevel = getProfileVisibility(item);
+        if (hideLevel === 'all') return false;
         if (userRole === 'normal' && (hideLevel === 'normal' || hideLevel === 'vip')) return false;
         if (userRole === 'vip' && hideLevel === 'vip') return false;
 
@@ -510,6 +553,14 @@
 
         cardHTML += `</div>`;
         card.innerHTML = cardHTML;
+        if (userRole === 'vip' || userRole === 'extra') {
+          const requestButton = document.createElement('button');
+          requestButton.type = 'button';
+          requestButton.className = 'mt-4 w-full px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-200 text-xs font-semibold transition';
+          requestButton.innerHTML = '<i class="fa-solid fa-user-minus mr-1.5"></i> Demander le retrait de ce profil';
+          requestButton.addEventListener('click', () => ouvrirDemandeRetrait(item));
+          card.appendChild(requestButton);
+        }
         grid.appendChild(card);
 
         if (userRole === 'normal' && (index + 1) % 3 === 0) {
@@ -568,6 +619,83 @@
       document.getElementById('req-msg').value = '';
       closeVipModal();
       alert("Demande envoyée !");
+    }
+
+    function ouvrirDemandeRetrait(item) {
+      if (userRole !== 'vip' && userRole !== 'extra') {
+        alert('Cette fonction est réservée aux comptes VIP.');
+        return;
+      }
+      activeRemovalProfile = {
+        key: getProfileKey(item),
+        name: String(item.displayName || 'Profil sans nom').slice(0, 200),
+        role: String(item.role || 'Rôle inconnu').slice(0, 80),
+        profileClass: String(item.class || '').slice(0, 80)
+      };
+      document.getElementById('removal-profile-label').textContent = `${activeRemovalProfile.name} — ${activeRemovalProfile.role}${activeRemovalProfile.profileClass ? ` · Classe ${activeRemovalProfile.profileClass}` : ''}`;
+      document.getElementById('removal-request-reason').value = '';
+      document.getElementById('removal-request-status').textContent = '';
+      document.getElementById('removal-request-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('removal-request-reason').focus(), 0);
+    }
+
+    function fermerDemandeRetrait() {
+      document.getElementById('removal-request-modal').classList.add('hidden');
+      activeRemovalProfile = null;
+    }
+
+    async function envoyerDemandeRetrait() {
+      if (!activeRemovalProfile) return alert('Sélectionne d’abord un profil.');
+      if (userRole !== 'vip' && userRole !== 'extra') return alert('Cette fonction est réservée aux comptes VIP.');
+
+      const reasonInput = document.getElementById('removal-request-reason');
+      const reason = reasonInput.value.trim();
+      const status = document.getElementById('removal-request-status');
+      const sendButton = document.getElementById('send-removal-request-btn');
+      if (reason.length < 10) {
+        status.textContent = 'Écris une explication d’au moins 10 caractères.';
+        status.className = 'text-xs text-rose-300 mt-3';
+        reasonInput.focus();
+        return;
+      }
+
+      sendButton.disabled = true;
+      sendButton.classList.add('opacity-60', 'cursor-not-allowed');
+      status.textContent = 'Envoi de la demande…';
+      status.className = 'text-xs text-sky-300 mt-3';
+      const baseRequest = {
+        profileKey: activeRemovalProfile.key,
+        profileName: activeRemovalProfile.name,
+        profileRole: activeRemovalProfile.role,
+        profileClass: activeRemovalProfile.profileClass,
+        reason: reason.slice(0, 1000),
+        requesterRole: userRole,
+        status: 'pending'
+      };
+
+      try {
+        if (cloudEstConfigure()) {
+          await firebaseDb.collection('removal_requests').add({
+            ...baseRequest,
+            createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+          });
+          fermerDemandeRetrait();
+          alert('Demande envoyée à l’administration. Le profil ne sera pas retiré tant que l’administrateur n’aura pas examiné la demande.');
+        } else {
+          const localRequest = { ...baseRequest, id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, createdAt: new Date().toISOString() };
+          removalRequestsLocal.unshift(localRequest);
+          if (!enregistrerJSONStockage('removalRequests', removalRequestsLocal)) throw new Error('Le navigateur n’a pas pu enregistrer la demande.');
+          fermerDemandeRetrait();
+          alert('Demande enregistrée dans ce navigateur uniquement. Configure Firebase pour la partager avec l’administration sur les autres appareils.');
+        }
+        if (!document.getElementById('admin-modal').classList.contains('hidden')) renderAdminRemovalRequests();
+      } catch (erreur) {
+        status.textContent = `Impossible d’envoyer la demande : ${erreur.message || erreur}. Vérifie les règles Firestore pour la collection removal_requests.`;
+        status.className = 'text-xs text-rose-300 mt-3';
+      } finally {
+        sendButton.disabled = false;
+        sendButton.classList.remove('opacity-60', 'cursor-not-allowed');
+      }
     }
 
     function openAdminModal() { document.getElementById('admin-modal').classList.remove('hidden'); renderAdminPanel(); }
@@ -641,6 +769,164 @@
       `).join('');
 
       renderAdminVisibilityList();
+      renderAdminRemovalRequests();
+    }
+
+    async function renderAdminRemovalRequests() {
+      const list = document.getElementById('admin-removal-requests-list');
+      const count = document.getElementById('removal-requests-count');
+      if (!list || !count) return;
+      list.innerHTML = '';
+
+      let requests = [];
+      if (cloudEstConfigure()) {
+        if (!utilisateurEstAdminCloud()) {
+          count.textContent = 'Administration requise';
+          const message = document.createElement('p');
+          message.className = 'text-xs text-slate-500 italic p-3';
+          message.textContent = 'Connecte le compte administrateur Firebase dans « Sauvegarde cloud gratuite » pour consulter les demandes partagées.';
+          list.appendChild(message);
+          return;
+        }
+        try {
+          const snapshot = await firebaseDb.collection('removal_requests').orderBy('createdAt', 'desc').limit(100).get();
+          requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), source: 'cloud' }));
+          adminRemovalRequestCache = requests;
+        } catch (erreur) {
+          count.textContent = 'Erreur de chargement';
+          const message = document.createElement('p');
+          message.className = 'text-xs text-rose-300 italic p-3';
+          message.textContent = `Impossible de lire les demandes : ${erreur.message || erreur}. Vérifie les règles Firestore de removal_requests.`;
+          list.appendChild(message);
+          return;
+        }
+      } else {
+        requests = removalRequestsLocal.map(req => ({ ...req, source: 'local' }));
+        adminRemovalRequestCache = requests;
+      }
+
+      const pendingCount = requests.filter(req => (req.status || 'pending') === 'pending').length;
+      count.textContent = `${pendingCount} en attente`;
+      if (requests.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'text-xs text-slate-500 italic p-3';
+        empty.textContent = 'Aucune demande de retrait pour le moment.';
+        list.appendChild(empty);
+        return;
+      }
+
+      requests.forEach(req => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-3 text-xs';
+        const head = document.createElement('div');
+        head.className = 'flex items-start justify-between gap-3';
+        const titleWrap = document.createElement('div');
+        const title = document.createElement('strong');
+        title.className = 'block text-rose-200 text-sm';
+        title.textContent = req.profileName || 'Profil sans nom';
+        const meta = document.createElement('p');
+        meta.className = 'text-slate-500 mt-1';
+        meta.textContent = `${req.profileRole || 'Rôle inconnu'}${req.profileClass ? ` · Classe ${req.profileClass}` : ''} · Demande ${String(req.requesterRole || 'VIP').toUpperCase()}`;
+        titleWrap.append(title, meta);
+        const state = document.createElement('span');
+        const currentStatus = req.status || 'pending';
+        const stateStyles = {
+          pending: 'bg-amber-500/15 text-amber-200',
+          approved: 'bg-emerald-500/15 text-emerald-200',
+          rejected: 'bg-slate-700 text-slate-300'
+        };
+        state.className = `px-2 py-1 rounded-lg text-[10px] whitespace-nowrap ${stateStyles[currentStatus] || stateStyles.pending}`;
+        state.textContent = currentStatus === 'approved' ? 'Approuvée' : currentStatus === 'rejected' ? 'Refusée' : 'En attente';
+        head.append(titleWrap, state);
+        const reason = document.createElement('p');
+        reason.className = 'text-slate-300 bg-slate-950 rounded-lg p-3 whitespace-pre-wrap break-words';
+        reason.textContent = req.reason || 'Aucune explication fournie.';
+        card.append(head, reason);
+        const date = document.createElement('p');
+        date.className = 'text-[10px] text-slate-500';
+        let dateValue = '';
+        try {
+          dateValue = req.createdAt && typeof req.createdAt.toDate === 'function'
+            ? req.createdAt.toDate().toLocaleString('fr-FR')
+            : req.createdAt ? new Date(req.createdAt).toLocaleString('fr-FR') : 'Date en cours de synchronisation';
+        } catch (_) { dateValue = 'Date inconnue'; }
+        date.textContent = dateValue;
+        card.appendChild(date);
+
+        if (currentStatus === 'pending') {
+          const actions = document.createElement('div');
+          actions.className = 'flex flex-wrap justify-end gap-2';
+          const approve = document.createElement('button');
+          approve.type = 'button';
+          approve.className = 'px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg font-semibold';
+          approve.textContent = 'Approuver et masquer';
+          approve.addEventListener('click', () => traiterDemandeRetrait(req.id, 'approved'));
+          const reject = document.createElement('button');
+          reject.type = 'button';
+          reject.className = 'px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg font-semibold';
+          reject.textContent = 'Refuser';
+          reject.addEventListener('click', () => traiterDemandeRetrait(req.id, 'rejected'));
+          actions.append(approve, reject);
+          card.appendChild(actions);
+        }
+        list.appendChild(card);
+      });
+    }
+
+    async function traiterDemandeRetrait(requestId, decision) {
+      const request = adminRemovalRequestCache.find(req => req.id === requestId);
+      if (!request || (decision !== 'approved' && decision !== 'rejected')) return;
+      if (cloudEstConfigure() && !utilisateurEstAdminCloud()) {
+        alert('Connecte le compte administrateur Firebase avant de traiter une demande.');
+        return;
+      }
+      const approved = decision === 'approved';
+      const confirmation = approved
+        ? `Masquer « ${request.profileName || 'ce profil'} » pour tous les visiteurs de l’annuaire ? Le fichier data.json ne sera pas effacé.`
+        : `Refuser la demande concernant « ${request.profileName || 'ce profil'} » ?`;
+      if (!confirm(confirmation)) return;
+
+      const oldHiddenProfiles = { ...hiddenProfiles };
+      try {
+        if (approved) {
+          hiddenProfiles[request.profileKey] = 'all';
+          if (cloudEstConfigure()) {
+            const result = await enregistrerVisibiliteCloud();
+            if (!result.ok) {
+              hiddenProfiles = oldHiddenProfiles;
+              afficherEtatCloud(result.message, true);
+              alert(`Le profil n’a pas été masqué : ${result.message}`);
+              return;
+            }
+          }
+          if (!enregistrerJSONStockage('hiddenProfiles', hiddenProfiles)) {
+            hiddenProfiles = oldHiddenProfiles;
+            alert('Impossible d’enregistrer le masquage dans le navigateur.');
+            return;
+          }
+        }
+
+        if (request.source === 'cloud' && cloudEstConfigure()) {
+          await firebaseDb.collection('removal_requests').doc(requestId).update({
+            status: decision,
+            reviewedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } else {
+          const index = removalRequestsLocal.findIndex(req => req.id === requestId);
+          if (index >= 0) {
+            removalRequestsLocal[index].status = decision;
+            removalRequestsLocal[index].reviewedAt = new Date().toISOString();
+            if (!enregistrerJSONStockage('removalRequests', removalRequestsLocal)) throw new Error('Échec de sauvegarde locale.');
+          }
+        }
+        renderCards();
+        renderAdminVisibilityList();
+        await renderAdminRemovalRequests();
+        alert(approved ? 'Demande approuvée : le profil est maintenant masqué dans l’annuaire.' : 'Demande refusée.');
+      } catch (erreur) {
+        afficherEtatCloud(`Impossible de traiter la demande : ${erreur.message || erreur}`, true);
+        alert(`Impossible de traiter la demande : ${erreur.message || erreur}. Vérifie les règles Firestore.`);
+      }
     }
 
     function afficherEtatCloud(message, erreur = false) {
@@ -654,15 +940,25 @@
       return Boolean(firebaseDb && firebaseAuth);
     }
 
+    function emailAdminSaisi() {
+      const champ = document.getElementById('cloud-admin-email');
+      const saisi = (champ?.value || '').trim();
+      if (saisi) return saisi.toLowerCase();
+      try { return (localStorage.getItem('firebaseAdminEmail') || '').trim().toLowerCase(); }
+      catch (_) { return ''; }
+    }
+
     function utilisateurEstAdminCloud() {
       const user = firebaseAuth?.currentUser;
-      return Boolean(user && user.email && user.email.toLowerCase() === FIREBASE_ADMIN_EMAIL.toLowerCase());
+      const emailAttendu = emailAdminSaisi();
+      // Cette vérification ne remplace pas les règles Firestore : le serveur refuse les actions non autorisées.
+      return Boolean(user && user.email && emailAttendu && user.email.toLowerCase() === emailAttendu);
     }
 
     async function enregistrerVisibiliteCloud() {
       if (!cloudEstConfigure()) return { ok: false, message: 'Firebase n’est pas configuré dans le fichier HTML.' };
       if (!utilisateurEstAdminCloud()) {
-        return { ok: false, message: `Connecte-toi avec le compte administrateur ${FIREBASE_ADMIN_EMAIL}.` };
+        return { ok: false, message: 'Connecte-toi avec le compte administrateur autorisé dans les règles Firestore.' };
       }
       try {
         await firebaseDb.collection('app_settings').doc('hiddenProfiles').set({
@@ -743,15 +1039,13 @@
         afficherEtatCloud('Saisis l’e-mail et le mot de passe du compte administrateur Firebase.', true);
         return;
       }
-      if (email.toLowerCase() !== FIREBASE_ADMIN_EMAIL.toLowerCase()) {
-        afficherEtatCloud(`L’e-mail doit correspondre à celui configuré pour l’administrateur : ${FIREBASE_ADMIN_EMAIL}.`, true);
-        return;
-      }
-      afficherEtatCloud('Connexion du compte administrateur Firebase…');
+      afficherEtatCloud('Connexion du compte Firebase…');
       try {
         await firebaseAuth.signInWithEmailAndPassword(email, password);
+        try { localStorage.setItem('firebaseAdminEmail', email); } catch (_) {}
         document.getElementById('cloud-admin-password').value = '';
         await chargerVisibiliteCloud({ apresConnexion: true });
+        await renderAdminRemovalRequests();
       } catch (erreur) {
         document.getElementById('cloud-admin-password').value = '';
         const message = ({
@@ -773,6 +1067,7 @@
       try {
         await firebaseAuth.signOut();
         afficherEtatCloud('Compte Firebase déconnecté. Les visiteurs continuent à lire les réglages partagés.');
+        await renderAdminRemovalRequests();
       } catch (erreur) {
         afficherEtatCloud(`Déconnexion impossible : ${erreur.message || erreur}`, true);
       }
@@ -809,7 +1104,8 @@
         [
           ['none', 'Visible pour tous'],
           ['normal', 'Masqué en Mode Normal'],
-          ['vip', 'Masqué Normal & VIP']
+          ['vip', 'Masqué Normal & VIP'],
+          ['all', 'Retiré de l’annuaire (masqué pour tous)']
         ].forEach(([value, text]) => {
           const option = document.createElement('option');
           option.value = value;
@@ -876,6 +1172,10 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       loadData();
+
+      const savedCloudEmail = (() => { try { return localStorage.getItem('firebaseAdminEmail') || ''; } catch (_) { return ''; } })();
+      const cloudEmailInput = document.getElementById('cloud-admin-email');
+      if (cloudEmailInput && savedCloudEmail && !cloudEmailInput.value) cloudEmailInput.value = savedCloudEmail;
 
       const searchInput = document.getElementById('search-input');
       const clearSearch = document.getElementById('clear-search');
