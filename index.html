@@ -23,6 +23,9 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-compat.js"></script>
 
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #020617; color: #f8fafc; }
@@ -199,11 +202,27 @@
 
       <!-- Gestion Visibilité Profils avec barre de recherche dédiée -->
       <div class="glass-panel p-5 rounded-2xl space-y-4">
+        <div class="rounded-xl border border-sky-500/20 bg-sky-500/5 p-4 space-y-3">
+          <div>
+            <h4 class="text-xs font-semibold text-sky-300 uppercase tracking-wider">Sauvegarde cloud gratuite</h4>
+            <p class="text-xs text-slate-400 mt-1">Connecte le compte administrateur Firebase pour partager les réglages entre les appareils. Le mot de passe n’est pas enregistré par cette page.</p>
+            <p id="cloud-save-status" role="status" aria-live="polite" class="text-xs text-sky-300 mt-2">API à configurer dans le code du fichier.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input id="cloud-admin-email" type="email" autocomplete="username" placeholder="E-mail du compte administrateur Firebase" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:ring-2 focus:ring-sky-500">
+            <input id="cloud-admin-password" type="password" autocomplete="current-password" placeholder="Mot de passe Firebase" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none focus:ring-2 focus:ring-sky-500">
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="connecterAdminCloud()" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-xl text-xs font-bold">Connecter le compte cloud</button>
+            <button type="button" onclick="deconnecterAdminCloud()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold">Déconnecter</button>
+          </div>
+          <p class="text-[11px] text-slate-500">Configure les identifiants de l’application Web Firebase dans FIREBASE_CONFIG. La sécurité des écritures doit être assurée par les règles Firestore, pas par le code HTML.</p>
+        </div>
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div>
             <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Gestion de la visibilité des profils</h4>
-            <p class="text-xs text-slate-500 mt-0.5">Modifiez la visibilité : les réglages sont enregistrés dans ce navigateur.</p>
-            <p id="visibility-save-status" role="status" aria-live="polite" class="text-xs text-emerald-400 mt-1">Enregistrement automatique activé.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Une fois le cloud configuré, chaque changement est enregistré en ligne et partagé entre les appareils.</p>
+            <p id="visibility-save-status" role="status" aria-live="polite" class="text-xs text-emerald-400 mt-1">Enregistrement automatique activé après connexion de l’administrateur Firebase.</p>
           </div>
           <input type="text" id="admin-search-profile" placeholder="Rechercher un profil à administrer..." class="w-full sm:w-72 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
         </div>
@@ -215,6 +234,38 @@
   </div>
 
   <script>
+    // CONFIGURATION FIREBASE (Web). Remplace ces valeurs depuis les paramètres de ton application Firebase.
+    // apiKey et appId sont des identifiants Web, pas des mots de passe. Ne mets aucune clé privée/serveur ici.
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyDJfy_xdnA259UY7d4BH_nY5F54WKO02N0',
+      authDomain: 'annuaire-scolaire-d1960.firebaseapp.com',
+      projectId: 'annuaire-scolaire-d1960',
+      storageBucket: 'annuaire-scolaire-d1960.firebasestorage.app',
+      messagingSenderId: '365757198260',
+      appId: '1:365757198260:web:532402b499ecba9c8c0ce1'
+    };
+    // Doit correspondre exactement à l’adresse e-mail inscrite dans firestore.rules.
+    const FIREBASE_ADMIN_EMAIL = 'philippe.alopo@gmail.com';
+
+    const firebaseConfigOk = Boolean(
+      window.firebase &&
+      typeof window.firebase.initializeApp === 'function' &&
+      FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.authDomain && FIREBASE_CONFIG.projectId && FIREBASE_CONFIG.appId &&
+      !/REMPLACER|EXEMPLE/i.test(Object.values(FIREBASE_CONFIG).join(' '))
+    );
+    let firebaseApp = null;
+    let firebaseAuth = null;
+    let firebaseDb = null;
+    if (firebaseConfigOk) {
+      try {
+        firebaseApp = window.firebase.apps.length ? window.firebase.app() : window.firebase.initializeApp(FIREBASE_CONFIG);
+        firebaseAuth = firebaseApp.auth();
+        firebaseDb = firebaseApp.firestore();
+      } catch (erreurFirebase) {
+        console.error('Initialisation Firebase impossible :', erreurFirebase);
+      }
+    }
+
     let rawData = [];
 
     // Lecture protégée : une valeur absente ou abîmée ne doit pas arrêter toute l'application.
@@ -333,8 +384,10 @@
         rawData = await response.json();
         dropZone.classList.add('hidden');
         initApp();
+        await chargerVisibiliteCloud();
       } catch (err) {
         dropZone.classList.remove('hidden');
+        await chargerVisibiliteCloud();
       }
     }
 
@@ -590,6 +643,141 @@
       renderAdminVisibilityList();
     }
 
+    function afficherEtatCloud(message, erreur = false) {
+      const statut = document.getElementById('cloud-save-status');
+      if (!statut) return;
+      statut.textContent = message;
+      statut.className = erreur ? 'text-xs text-rose-400 mt-2' : 'text-xs text-sky-300 mt-2';
+    }
+
+    function cloudEstConfigure() {
+      return Boolean(firebaseDb && firebaseAuth);
+    }
+
+    function utilisateurEstAdminCloud() {
+      const user = firebaseAuth?.currentUser;
+      return Boolean(user && user.email && user.email.toLowerCase() === FIREBASE_ADMIN_EMAIL.toLowerCase());
+    }
+
+    async function enregistrerVisibiliteCloud() {
+      if (!cloudEstConfigure()) return { ok: false, message: 'Firebase n’est pas configuré dans le fichier HTML.' };
+      if (!utilisateurEstAdminCloud()) {
+        return { ok: false, message: `Connecte-toi avec le compte administrateur ${FIREBASE_ADMIN_EMAIL}.` };
+      }
+      try {
+        await firebaseDb.collection('app_settings').doc('hiddenProfiles').set({
+          value: hiddenProfiles,
+          updatedAt: window.firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+        return { ok: true, message: '✓ Réglages enregistrés dans Firebase Firestore.' };
+      } catch (erreur) {
+        return { ok: false, message: `Firebase a refusé l’enregistrement : ${erreur.message || erreur}` };
+      }
+    }
+
+    async function chargerVisibiliteCloud(options = {}) {
+      if (!cloudEstConfigure()) {
+        afficherEtatCloud('Firebase non configuré : remplace les valeurs FIREBASE_CONFIG dans ce fichier et vérifie que les trois scripts Firebase chargent.');
+        return false;
+      }
+
+      afficherEtatCloud('Chargement des réglages depuis Firebase…');
+      try {
+        const doc = await firebaseDb.collection('app_settings').doc('hiddenProfiles').get();
+        if (doc.exists) {
+          const data = doc.data() || {};
+          if (data.value && typeof data.value === 'object' && !Array.isArray(data.value)) {
+            hiddenProfiles = data.value;
+            enregistrerJSONStockage('hiddenProfiles', hiddenProfiles);
+            renderCards();
+            if (!document.getElementById('admin-modal').classList.contains('hidden')) renderAdminVisibilityList();
+            const date = data.updatedAt && typeof data.updatedAt.toDate === 'function'
+              ? data.updatedAt.toDate().toLocaleString('fr-FR') : '';
+            afficherEtatCloud(`✓ Réglages partagés chargés${date ? ` (mis à jour le ${date})` : ''}.`);
+            afficherEtatVisibilite('✓ Visibilité synchronisée avec Firebase.');
+            return true;
+          }
+          afficherEtatCloud('Le document Firebase existe, mais son format est invalide.', true);
+          return false;
+        }
+
+        // Initialise le document uniquement si l’administrateur est connecté.
+        if (options.apresConnexion && utilisateurEstAdminCloud()) {
+          const ancienEtat = { ...hiddenProfiles };
+          const aImporter = Object.keys(hiddenProfiles || {}).length > 0 &&
+            confirm('Aucun réglage partagé n’existe encore. Importer dans Firebase les réglages locaux de ce navigateur ?');
+          if (!aImporter) hiddenProfiles = {};
+          const resultat = await enregistrerVisibiliteCloud();
+          if (!resultat.ok) {
+            hiddenProfiles = ancienEtat;
+            afficherEtatCloud(resultat.message, true);
+            return false;
+          }
+          enregistrerJSONStockage('hiddenProfiles', hiddenProfiles);
+          renderCards();
+          renderAdminVisibilityList();
+          afficherEtatCloud(aImporter ? '✓ Réglages locaux importés dans Firebase et partagés.' : '✓ Document Firebase initialisé. Les prochains changements seront partagés.');
+          return true;
+        }
+
+        afficherEtatCloud('Firebase est joignable, mais aucun réglage partagé n’existe encore. Connecte le compte administrateur pour initialiser la base.');
+        return true;
+      } catch (erreur) {
+        const message = erreur?.code === 'permission-denied'
+          ? 'Lecture refusée par Firestore : vérifie les règles de firestore.rules.'
+          : `Erreur Firebase : ${erreur.message || erreur}`;
+        afficherEtatCloud(message, true);
+        return false;
+      }
+    }
+
+    async function connecterAdminCloud() {
+      if (!cloudEstConfigure()) {
+        afficherEtatCloud('Configure d’abord FIREBASE_CONFIG dans le fichier HTML.', true);
+        alert('Firebase n’est pas encore configuré. Suis le fichier LISEZ-MOI_Firebase.txt du pack.');
+        return;
+      }
+      const email = document.getElementById('cloud-admin-email').value.trim();
+      const password = document.getElementById('cloud-admin-password').value;
+      if (!email || !password) {
+        afficherEtatCloud('Saisis l’e-mail et le mot de passe du compte administrateur Firebase.', true);
+        return;
+      }
+      if (email.toLowerCase() !== FIREBASE_ADMIN_EMAIL.toLowerCase()) {
+        afficherEtatCloud(`L’e-mail doit correspondre à celui configuré pour l’administrateur : ${FIREBASE_ADMIN_EMAIL}.`, true);
+        return;
+      }
+      afficherEtatCloud('Connexion du compte administrateur Firebase…');
+      try {
+        await firebaseAuth.signInWithEmailAndPassword(email, password);
+        document.getElementById('cloud-admin-password').value = '';
+        await chargerVisibiliteCloud({ apresConnexion: true });
+      } catch (erreur) {
+        document.getElementById('cloud-admin-password').value = '';
+        const message = ({
+          'auth/invalid-credential': 'E-mail ou mot de passe incorrect.',
+          'auth/user-not-found': 'Aucun compte Firebase ne correspond à cet e-mail.',
+          'auth/wrong-password': 'Mot de passe incorrect.',
+          'auth/operation-not-allowed': 'Active la méthode de connexion E-mail/Mot de passe dans Firebase Authentication.',
+          'auth/unauthorized-domain': 'Ajoute le domaine du site dans Firebase Authentication > Settings > Authorized domains.'
+        })[erreur.code] || `Connexion refusée : ${erreur.message || erreur}`;
+        afficherEtatCloud(message, true);
+      }
+    }
+
+    async function deconnecterAdminCloud() {
+      if (!cloudEstConfigure()) {
+        afficherEtatCloud('Firebase n’est pas configuré.');
+        return;
+      }
+      try {
+        await firebaseAuth.signOut();
+        afficherEtatCloud('Compte Firebase déconnecté. Les visiteurs continuent à lire les réglages partagés.');
+      } catch (erreur) {
+        afficherEtatCloud(`Déconnexion impossible : ${erreur.message || erreur}`, true);
+      }
+    }
+
     function renderAdminVisibilityList() {
       const searchInput = document.getElementById('admin-search-profile');
       const searchAdmin = (searchInput?.value || '').toLocaleLowerCase('fr-FR').trim();
@@ -636,14 +824,22 @@
       });
     }
 
-    function changerVisibiliteProfil(item, level) {
+    async function changerVisibiliteProfil(item, level) {
       const key = getProfileKey(item);
       const ancienneValeur = JSON.stringify(hiddenProfiles);
+
+      if (cloudEstConfigure() && !utilisateurEstAdminCloud()) {
+        renderAdminVisibilityList();
+        afficherEtatVisibilite('Connecte le compte administrateur Firebase avant de modifier la visibilité.', true);
+        afficherEtatCloud('Connexion requise : seuls les changements autorisés par les règles Firestore peuvent être enregistrés.', true);
+        alert('Connecte d’abord le compte administrateur Firebase dans la zone « Sauvegarde cloud gratuite ».');
+        return;
+      }
 
       if (level === 'none') delete hiddenProfiles[key];
       else hiddenProfiles[key] = level;
 
-      // Supprime l'ancienne entrée basée uniquement sur le nom pour éviter qu'elle prenne le dessus.
+      // Nettoie l’ancienne clé de compatibilité, indexée seulement par nom.
       if (item.displayName && Object.prototype.hasOwnProperty.call(hiddenProfiles, item.displayName)) {
         delete hiddenProfiles[item.displayName];
       }
@@ -652,12 +848,28 @@
       if (!sauvegardeOK) {
         try { hiddenProfiles = JSON.parse(ancienneValeur); } catch (_) { hiddenProfiles = {}; }
         renderAdminVisibilityList();
-        afficherEtatVisibilite('Échec de sauvegarde : le navigateur bloque peut-être le stockage. Ouvre la page via son adresse HTTPS habituelle.', true);
-        alert('Le réglage n’a pas pu être enregistré. Vérifie que le navigateur autorise le stockage des données pour ce site.');
+        afficherEtatVisibilite('Échec de sauvegarde locale : le navigateur bloque peut-être le stockage.', true);
+        alert('Le réglage n’a pas pu être enregistré dans ce navigateur.');
         return;
       }
 
-      afficherEtatVisibilite('✓ Réglage enregistré. Il sera conservé au prochain rechargement sur ce navigateur.');
+      if (cloudEstConfigure()) {
+        const resultat = await enregistrerVisibiliteCloud();
+        if (!resultat.ok) {
+          try { hiddenProfiles = JSON.parse(ancienneValeur); } catch (_) { hiddenProfiles = {}; }
+          enregistrerJSONStockage('hiddenProfiles', hiddenProfiles);
+          renderCards();
+          renderAdminVisibilityList();
+          afficherEtatVisibilite('Échec de la synchronisation Firebase. Le changement a été annulé.', true);
+          afficherEtatCloud(resultat.message, true);
+          alert(`La modification n’a pas été partagée. ${resultat.message}`);
+          return;
+        }
+        afficherEtatCloud(resultat.message);
+        afficherEtatVisibilite('✓ Enregistré dans Firebase : les autres appareils récupéreront ce réglage.');
+      } else {
+        afficherEtatVisibilite('✓ Réglage enregistré localement uniquement. Configure Firebase pour le partager entre appareils.');
+      }
       renderCards();
       renderAdminVisibilityList();
     }
@@ -698,6 +910,7 @@
               rawData = JSON.parse(event.target.result);
               dropZone.classList.add('hidden');
               initApp();
+              chargerVisibiliteCloud();
             } catch (err) {
               alert("Erreur de format JSON.");
             }
