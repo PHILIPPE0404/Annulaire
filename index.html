@@ -12,20 +12,10 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
-            },
-            vip: {
-              500: '#f59e0b', 600: '#d97706', 700: '#b45309'
-            },
-            extra: {
-              500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9'
-            }
-          },
-          keyframes: {
-            fadeIn: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
-          },
-          animation: { 'fade-in': 'fadeIn 0.25s ease-out forwards' }
+            brand: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+            vip: { 500: '#f59e0b', 600: '#d97706', 700: '#b45309' },
+            extra: { 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9' }
+          }
         }
       }
     }
@@ -42,7 +32,6 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .card-animate { animation: fadeIn 0.3s ease-out forwards; }
     .vip-blur { filter: blur(6px); user-select: none; pointer-events: none; }
   </style>
 </head>
@@ -50,7 +39,7 @@
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
 
-    <!-- Top Bar Navigation / VIP Status Indicator -->
+    <!-- Top Bar Navigation -->
     <div class="flex justify-between items-center mb-6 p-4 rounded-2xl glass-panel shadow-lg">
       <div class="flex items-center gap-3">
         <div id="user-badge-status" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
@@ -173,28 +162,30 @@
         <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl"><i class="fa-solid fa-shield-halved"></i></div>
         <div>
           <h3 class="text-xl font-bold text-white">Panneau VIP Extra (Admin)</h3>
-          <p class="text-xs text-slate-400">Gestion des codes d'accès et de la visibilité des profils.</p>
+          <p class="text-xs text-slate-400">Gestion complète des codes et de la visibilité des profils.</p>
         </div>
       </div>
 
       <div class="space-y-6">
+        <!-- Section Gestion des Codes -->
         <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Créer un nouveau code VIP / Extra</h4>
+          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Créer ou gérer les codes</h4>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input type="text" id="new-code-name" placeholder="Code (ex: LUMIERE2026)" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
+            <input type="text" id="new-code-name" placeholder="Nom du code..." class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
             <select id="new-code-type" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
               <option value="vip">VIP Standard</option>
               <option value="extra">VIP Extra (Admin)</option>
             </select>
-            <button onclick="creerCodeAdmin()" class="py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">Générer le code</button>
+            <button onclick="creerCodeAdmin()" class="py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">Ajouter le code</button>
           </div>
-          <div id="codes-list" class="mt-2 text-xs text-slate-400 space-y-1"></div>
+          <div id="codes-list" class="mt-3 space-y-2"></div>
         </div>
 
+        <!-- Section Gestion Visibilité Profils -->
         <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Gestion de la visibilité des personnes</h4>
-          <p class="text-xs text-slate-500">Cochez les personnes à masquer pour les utilisateurs en mode Normal.</p>
-          <div id="admin-visibility-list" class="max-h-48 overflow-y-auto space-y-2 pr-2"></div>
+          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Visibilité spécifique par profil</h4>
+          <p class="text-xs text-slate-500">Choisissez comment chaque profil doit se comporter selon le mode utilisateur.</p>
+          <div id="admin-visibility-list" class="max-h-56 overflow-y-auto space-y-2 pr-2"></div>
         </div>
       </div>
     </div>
@@ -204,7 +195,7 @@
     let rawData = [];
     let userRole = localStorage.getItem('userRole') || 'normal';
     let customCodes = JSON.parse(localStorage.getItem('customCodes')) || { 'VIP2026': 'vip', 'ADMINEXTRA': 'extra' };
-    let hiddenProfiles = JSON.parse(localStorage.getItem('hiddenProfiles')) || [];
+    let hiddenProfiles = JSON.parse(localStorage.getItem('hiddenProfiles')) || {}; // ex: { "Nom Prénom": "normal" ou "vip" }
 
     const bgGradients = ['from-blue-600 to-indigo-600', 'from-emerald-600 to-teal-600', 'from-purple-600 to-pink-600', 'from-amber-500 to-orange-600', 'from-cyan-600 to-blue-600', 'from-rose-600 to-red-600'];
 
@@ -294,7 +285,10 @@
       const sortOrder = document.getElementById('sort-order').value;
 
       let filtered = rawData.filter(item => {
-        if (userRole === 'normal' && hiddenProfiles.includes(item.displayName)) return false;
+        const hideLevel = hiddenProfiles[item.displayName]; // 'normal', 'vip', ou undefined
+        if (userRole === 'normal' && hideLevel === 'normal') return false;
+        if (userRole === 'vip' && hideLevel === 'vip') return false;
+        // En extra, rien n'est masqué
 
         const matchesSearch = item.displayName.toLowerCase().includes(search) || (item.class && item.class.toLowerCase().includes(search));
         const matchesRole = roleFilter === 'ALL' || item.role === roleFilter;
@@ -322,8 +316,7 @@
         const gradient = getGradient(item.displayName);
 
         const card = document.createElement('div');
-        card.className = "glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all duration-200 card-animate flex flex-col justify-between";
-        card.style.animationDelay = `${Math.min(index * 0.03, 0.3)}s`;
+        card.className = "glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all duration-150 flex flex-col justify-between";
 
         let cardHTML = `
           <div>
@@ -366,7 +359,8 @@
         card.innerHTML = cardHTML;
         grid.appendChild(card);
 
-        if (userRole === 'normal' && (index + 1) % 4 === 0) {
+        // Plus de pubs en mode normal (toutes les 3 cartes au lieu de 4)
+        if (userRole === 'normal' && (index + 1) % 3 === 0) {
           const adCard = document.createElement('div');
           adCard.className = "glass-panel rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-yellow-500/10 flex flex-col justify-between relative overflow-hidden";
           adCard.innerHTML = `
@@ -425,24 +419,59 @@
       }
     }
 
-    function renderAdminPanel() {
-      const listDiv = document.getElementById('codes-list');
-      listDiv.innerHTML = Object.entries(customCodes).map(([c, t]) => `<div>• <strong>${c}</strong> (${t})</div>`).join('');
-
-      const visDiv = document.getElementById('admin-visibility-list');
-      visDiv.innerHTML = rawData.map(item => `
-        <label class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs cursor-pointer">
-          <span class="text-slate-200 font-medium">${item.displayName} <span class="text-slate-500">(${item.role})</span></span>
-          <input type="checkbox" ${hiddenProfiles.includes(item.displayName) ? 'checked' : ''} onchange="toggleHideProfile('${item.displayName.replace(/'/g, "\\'")}')" class="rounded bg-slate-800 border-slate-700 text-purple-600 focus:ring-purple-500">
-        </label>
-      `).join('');
+    function supprimerCode(code) {
+      if (confirm(`Voulez-vous supprimer le code '${code}' ?`)) {
+        delete customCodes[code];
+        localStorage.setItem('customCodes', JSON.stringify(customCodes));
+        renderAdminPanel();
+      }
     }
 
-    function toggleHideProfile(name) {
-      if (hiddenProfiles.includes(name)) {
-        hiddenProfiles = hiddenProfiles.filter(n => n !== name);
+    function changerTypeCode(code, newType) {
+      customCodes[code] = newType;
+      localStorage.setItem('customCodes', JSON.stringify(customCodes));
+      renderAdminPanel();
+    }
+
+    function renderAdminPanel() {
+      const listDiv = document.getElementById('codes-list');
+      listDiv.innerHTML = Object.entries(customCodes).map(([c, t]) => `
+        <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
+          <div>
+            <strong class="text-white">${c}</strong> 
+            <span class="ml-2 px-2 py-0.5 rounded text-[10px] ${t === 'extra' ? 'bg-purple-500/20 text-purple-300' : 'bg-amber-500/20 text-amber-300'}">${t}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <select onchange="changerTypeCode('${c}', this.value)" class="bg-slate-800 text-slate-300 rounded px-2 py-1 text-[11px] outline-none">
+              <option value="vip" ${t === 'vip' ? 'selected' : ''}>VIP</option>
+              <option value="extra" ${t === 'extra' ? 'selected' : ''}>Extra</option>
+            </select>
+            <button onclick="supprimerCode('${c}')" class="text-red-400 hover:text-red-300 px-2 py-1"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
+
+      const visDiv = document.getElementById('admin-visibility-list');
+      visDiv.innerHTML = rawData.map(item => {
+        const currentHide = hiddenProfiles[item.displayName] || 'none';
+        return `
+          <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
+            <span class="text-slate-200 font-medium">${item.displayName} <span class="text-slate-500">(${item.role})</span></span>
+            <select onchange="changerVisibiliteProfil('${item.displayName.replace(/'/g, "\\'")}', this.value)" class="bg-slate-800 text-slate-300 rounded px-2 py-1 text-[11px] outline-none border border-slate-700">
+              <option value="none" ${currentHide === 'none' ? 'selected' : ''}>Visible pour tous</option>
+              <option value="normal" ${currentHide === 'normal' ? 'selected' : ''}>Masqué en Mode Normal</option>
+              <option value="vip" ${currentHide === 'vip' ? 'selected' : ''}>Masqué en Mode Normal & VIP</option>
+            </select>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function changerVisibiliteProfil(name, level) {
+      if (level === 'none') {
+        delete hiddenProfiles[name];
       } else {
-        hiddenProfiles.push(name);
+        hiddenProfiles[name] = level;
       }
       localStorage.setItem('hiddenProfiles', JSON.stringify(hiddenProfiles));
       renderCards();
