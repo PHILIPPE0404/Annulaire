@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Annuaire Scolaire — Collège Louis Lumière</title>
+  <title>Annuaire Scolaire — Collège Louis Lumière (VIP System)</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -13,22 +13,19 @@
         extend: {
           colors: {
             brand: {
-              50: '#f0f9ff',
-              100: '#e0f2fe',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              700: '#0369a1',
+              50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
+            },
+            vip: {
+              500: '#f59e0b', 600: '#d97706', 700: '#b45309'
+            },
+            extra: {
+              500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9'
             }
           },
           keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0', transform: 'translateY(8px)' },
-              '100%': { opacity: '1', transform: 'translateY(0)' }
-            }
+            fadeIn: { '0%': { opacity: '0', transform: 'translateY(8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
           },
-          animation: {
-            'fade-in': 'fadeIn 0.25s ease-out forwards'
-          }
+          animation: { 'fade-in': 'fadeIn 0.25s ease-out forwards' }
         }
       }
     }
@@ -46,19 +43,35 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .card-animate { animation: fadeIn 0.3s ease-out forwards; }
+    .vip-blur { filter: blur(6px); user-select: none; pointer-events: none; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-brand-500 selection:text-white pb-12">
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-brand-500 selection:text-white pb-16">
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+    <!-- Top Bar Navigation / VIP Status Indicator -->
+    <div class="flex justify-between items-center mb-6 p-4 rounded-2xl glass-panel shadow-lg">
+      <div class="flex items-center gap-3">
+        <div id="user-badge-status" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-user"></i> Mode Normal
+        </div>
+        <span class="text-xs text-slate-400 hidden sm:inline">Collège Louis Lumière</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openVipModal()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 shadow-lg shadow-amber-500/20 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-crown"></i> Espace VIP / Extra
+        </button>
+        <button id="admin-panel-btn" onclick="openAdminModal()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white shadow-lg shadow-purple-500/20 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-shield-halved"></i> Admin Extra
+        </button>
+      </div>
+    </div>
 
     <!-- Header -->
     <header class="mb-8 text-center relative">
       <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass-panel text-brand-400 text-xs font-semibold mb-4 border border-brand-500/20 shadow-sm">
-        <i class="fa-solid fa-graduation-cap text-sm"></i> Collège Louis Lumière
-      </div>
 
       <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-brand-400 bg-clip-text text-transparent mb-3">
         Annuaire Scolaire
@@ -69,25 +82,13 @@
 
       <!-- Stats -->
       <div class="mt-6 inline-flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-6 py-2.5 rounded-2xl glass-panel text-xs text-slate-300">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-user-graduate text-brand-400"></i>
-          <span>Élèves : <strong id="stat-students" class="text-white font-bold">0</strong></span>
-        </div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-user-graduate text-brand-400"></i><span>Élèves : <strong id="stat-students" class="text-white font-bold">0</strong></span></div>
         <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-chalkboard-user text-indigo-400"></i>
-          <span>Profs : <strong id="stat-teachers" class="text-white font-bold">0</strong></span>
-        </div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-chalkboard-user text-indigo-400"></i><span>Profs : <strong id="stat-teachers" class="text-white font-bold">0</strong></span></div>
         <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-user-gear text-amber-400"></i>
-          <span>Personnel : <strong id="stat-staff" class="text-white font-bold">0</strong></span>
-        </div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-user-gear text-amber-400"></i><span>Personnel : <strong id="stat-staff" class="text-white font-bold">0</strong></span></div>
         <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-people-roof text-emerald-400"></i>
-          <span>Parents : <strong id="stat-parents" class="text-white font-bold">0</strong></span>
-        </div>
+        <div class="flex items-center gap-2"><i class="fa-solid fa-people-roof text-emerald-400"></i><span>Parents : <strong id="stat-parents" class="text-white font-bold">0</strong></span></div>
       </div>
     </header>
 
@@ -97,19 +98,11 @@
         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
           <i class="fa-solid fa-magnifying-glass"></i>
         </div>
-        <input 
-          type="text" 
-          id="search-input"
-          placeholder="Rechercher par nom, prénom, classe..." 
-          class="w-full pl-11 pr-10 py-3 bg-slate-900/90 border border-slate-800 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-white placeholder-slate-500 text-sm transition-all"
-        >
-        <button id="clear-search" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-white transition">
-          <i class="fa-solid fa-circle-xmark"></i>
-        </button>
+        <input type="text" id="search-input" placeholder="Rechercher par nom, prénom, classe..." class="w-full pl-11 pr-10 py-3 bg-slate-900/90 border border-slate-800 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none text-white placeholder-slate-500 text-sm transition-all">
+        <button id="clear-search" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-white transition"><i class="fa-solid fa-circle-xmark"></i></button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800/60">
-        <!-- Filtre Rôle -->
         <select id="filter-role" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
           <option value="ALL">Tous les rôles</option>
           <option value="Élève">Élèves</option>
@@ -117,13 +110,9 @@
           <option value="Enseignant">Enseignants / Profs</option>
           <option value="Personnel">Personnel</option>
         </select>
-
-        <!-- Filtre Classe -->
         <select id="filter-class" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
           <option value="ALL">Toutes les classes</option>
         </select>
-
-        <!-- Tri Alphabétique -->
         <select id="sort-order" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
           <option value="AZ">Nom (A ➔ Z)</option>
           <option value="ZA">Nom (Z ➔ A)</option>
@@ -131,7 +120,7 @@
       </div>
     </div>
 
-    <!-- Dépôt de fichier manuel -->
+    <!-- Drop de secours -->
     <div id="drop-zone" class="hidden mb-8 p-6 rounded-2xl border-2 border-dashed border-slate-800 hover:border-brand-500/50 bg-slate-900/40 text-center transition cursor-pointer">
       <i class="fa-solid fa-file-arrow-up text-3xl text-brand-400 mb-2"></i>
       <p class="text-sm text-slate-300 font-medium">Glissez-déposez le fichier <code class="text-brand-400">data.json</code> ici</p>
@@ -141,62 +130,121 @@
     <!-- Grille des Cartes -->
     <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
-    <!-- Empty State -->
     <div id="empty-state" class="hidden py-16 text-center">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600">
-        <i class="fa-solid fa-user-slash text-2xl"></i>
-      </div>
+      <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600"><i class="fa-solid fa-user-slash text-2xl"></i></div>
       <h3 class="text-base font-semibold text-slate-300">Aucun résultat trouvé</h3>
     </div>
 
   </div>
 
+  <!-- MODALE VIP ACCESS -->
+  <div id="vip-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeVipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl"><i class="fa-solid fa-crown"></i></div>
+        <h3 class="text-xl font-bold text-white">Portail VIP & VIP Extra</h3>
+        <p class="text-xs text-slate-400 mt-1">Débloquez l'accès complet et supprimez les restrictions.</p>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Option 1 : J'ai un code VIP / Extra</h4>
+          <input type="text" id="vip-code-input" placeholder="Entrez votre code secret..." class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white outline-none focus:ring-2 focus:ring-amber-500">
+          <button onclick="validerCodeVip()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Activer le code</button>
+        </div>
+
+        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="text-xs font-semibold text-brand-400 uppercase tracking-wider">Option 2 : Demander le VIP</h4>
+          <p class="text-xs text-slate-400">Envoyez une demande de code à l'administrateur Extra du collège.</p>
+          <button onclick="demanderVip()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition">Envoyer une demande</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE ADMIN EXTRA -->
+  <div id="admin-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-purple-500/30 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl"><i class="fa-solid fa-shield-halved"></i></div>
+        <div>
+          <h3 class="text-xl font-bold text-white">Panneau VIP Extra (Admin)</h3>
+          <p class="text-xs text-slate-400">Gestion des codes d'accès et de la visibilité des profils.</p>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Créer un nouveau code VIP / Extra</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input type="text" id="new-code-name" placeholder="Code (ex: LUMIERE2026)" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
+            <select id="new-code-type" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
+              <option value="vip">VIP Standard</option>
+              <option value="extra">VIP Extra (Admin)</option>
+            </select>
+            <button onclick="creerCodeAdmin()" class="py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">Générer le code</button>
+          </div>
+          <div id="codes-list" class="mt-2 text-xs text-slate-400 space-y-1"></div>
+        </div>
+
+        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Gestion de la visibilité des personnes</h4>
+          <p class="text-xs text-slate-500">Cochez les personnes à masquer pour les utilisateurs en mode Normal.</p>
+          <div id="admin-visibility-list" class="max-h-48 overflow-y-auto space-y-2 pr-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let rawData = [];
+    let userRole = localStorage.getItem('userRole') || 'normal';
+    let customCodes = JSON.parse(localStorage.getItem('customCodes')) || { 'VIP2026': 'vip', 'ADMINEXTRA': 'extra' };
+    let hiddenProfiles = JSON.parse(localStorage.getItem('hiddenProfiles')) || [];
 
-    const bgGradients = [
-      'from-blue-600 to-indigo-600',
-      'from-emerald-600 to-teal-600',
-      'from-purple-600 to-pink-600',
-      'from-amber-500 to-orange-600',
-      'from-cyan-600 to-blue-600',
-      'from-rose-600 to-red-600'
-    ];
+    const bgGradients = ['from-blue-600 to-indigo-600', 'from-emerald-600 to-teal-600', 'from-purple-600 to-pink-600', 'from-amber-500 to-orange-600', 'from-cyan-600 to-blue-600', 'from-rose-600 to-red-600'];
 
     function getInitials(name) {
       if (!name) return '??';
       const parts = name.trim().split(' ');
-      return parts.length >= 2 
-        ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-        : name.substring(0, 2).toUpperCase();
+      return parts.length >= 2 ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase() : name.substring(0, 2).toUpperCase();
     }
 
     function getGradient(name) {
       let hash = 0;
-      for (let i = 0; i < name.length; i++) {
-        hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      }
+      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
       return bgGradients[Math.abs(hash) % bgGradients.length];
     }
 
-    function getRoleBadge(role, classe) {
-      switch(role) {
-        case 'Enseignant':
-          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/15 text-indigo-400 border border-indigo-500/20">Professeur</span>`;
-        case 'Personnel':
-          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20">Personnel</span>`;
-        case 'Parent':
-          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">Parent</span>`;
-        default:
-          return `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-500/15 text-brand-400 border border-brand-500/20">Classe ${classe || 'N/C'}</span>`;
+    function updateInterfaceRole() {
+      const badge = document.getElementById('user-badge-status');
+      const adminBtn = document.getElementById('admin-panel-btn');
+
+      if (userRole === 'extra') {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1.5";
+        badge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> VIP Extra (Admin)`;
+        adminBtn.classList.remove('hidden');
+      } else if (userRole === 'vip') {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5";
+        badge.innerHTML = `<i class="fa-solid fa-crown"></i> VIP Actif`;
+        adminBtn.classList.add('hidden');
+      } else {
+        badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5";
+        badge.innerHTML = `<i class="fa-solid fa-user"></i> Mode Normal`;
+        adminBtn.classList.add('hidden');
       }
+      renderCards();
     }
 
     async function loadData() {
       const dropZone = document.getElementById('drop-zone');
       try {
         const response = await fetch('./data.json');
-        if (!response.ok) throw new Error("Chargement direct bloqué");
+        if (!response.ok) throw new Error("Accès direct bloqué");
         rawData = await response.json();
         dropZone.classList.add('hidden');
         initApp();
@@ -233,7 +281,7 @@
         classSelect.appendChild(opt);
       });
 
-      renderCards();
+      updateInterfaceRole();
     }
 
     function renderCards() {
@@ -246,12 +294,11 @@
       const sortOrder = document.getElementById('sort-order').value;
 
       let filtered = rawData.filter(item => {
-        const matchesSearch = item.displayName.toLowerCase().includes(search) ||
-                              (item.class && item.class.toLowerCase().includes(search));
-        
+        if (userRole === 'normal' && hiddenProfiles.includes(item.displayName)) return false;
+
+        const matchesSearch = item.displayName.toLowerCase().includes(search) || (item.class && item.class.toLowerCase().includes(search));
         const matchesRole = roleFilter === 'ALL' || item.role === roleFilter;
         const matchesClass = classFilter === 'ALL' || item.class === classFilter;
-
         return matchesSearch && matchesRole && matchesClass;
       });
 
@@ -281,44 +328,22 @@
         let cardHTML = `
           <div>
             <div class="flex items-start justify-between gap-3 mb-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${gradient} flex items-center justify-center text-white font-bold text-base shadow-lg shrink-0">
-                ${initials}
-              </div>
-              ${getRoleBadge(item.role, item.class)}
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${gradient} flex items-center justify-center text-white font-bold text-base shadow-lg shrink-0">${initials}</div>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-500/15 text-brand-400 border border-brand-500/20">${item.role === 'Élève' ? 'Classe ' + (item.class || 'N/C') : item.role}</span>
             </div>
-
-            <h3 class="font-bold text-white text-base leading-snug">
-              ${item.displayName}
-            </h3>
-            
-            <p class="text-xs text-slate-400 mt-1">
-              ${item.school || 'CLG-LOUIS LUMIERE'}
-            </p>
+            <h3 class="font-bold text-white text-base leading-snug">${item.displayName}</h3>
+            <p class="text-xs text-slate-400 mt-1">${item.school || 'CLG-LOUIS LUMIERE'}</p>
         `;
 
         if (item.motto) {
-          cardHTML += `
-            <p class="mt-3 text-xs italic text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/50">
-              « ${item.motto} »
-            </p>
-          `;
+          cardHTML += `<p class="mt-3 text-xs italic text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/50">« ${item.motto} »</p>`;
         }
-
-        if (item.hobbies && item.hobbies.length > 0) {
-          cardHTML += `
-            <div class="mt-3 flex flex-wrap gap-1">
-              ${item.hobbies.map(h => `<span class="px-2 py-0.5 rounded bg-slate-800 text-[10px] text-slate-400">${h}</span>`).join('')}
-            </div>
-          `;
-        }
-
-        cardHTML += `</div>`;
 
         if (item.relations && item.relations.length > 0) {
           const isParentRole = item.role === 'Parent';
-          const title = isParentRole ? 'Enfant(s) rattaché(s)' : 'Responsable(s)';
+          const relationsToShow = (userRole === 'normal' && !isParentRole) ? [item.relations[0]] : item.relations;
+          const title = isParentRole ? 'Enfant(s) rattaché(s)' : (userRole === 'normal' ? 'Responsable (1 visible - VIP requis pour voir tout)' : 'Responsable(s)');
           const icon = isParentRole ? 'fa-user-graduate text-brand-400' : 'fa-people-roof text-emerald-400';
-          const dotColor = isParentRole ? 'bg-brand-400' : 'bg-emerald-400';
 
           cardHTML += `
             <div class="mt-4 pt-3 border-t border-slate-800/80">
@@ -326,9 +351,9 @@
                 <i class="fa-solid ${icon} me-1"></i> ${title}
               </span>
               <div class="space-y-1">
-                ${item.relations.map(rel => `
+                ${relationsToShow.map(rel => `
                   <div class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full ${dotColor} inline-block"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
                     ${rel}
                   </div>
                 `).join('')}
@@ -337,9 +362,90 @@
           `;
         }
 
+        cardHTML += `</div>`;
         card.innerHTML = cardHTML;
         grid.appendChild(card);
+
+        if (userRole === 'normal' && (index + 1) % 4 === 0) {
+          const adCard = document.createElement('div');
+          adCard.className = "glass-panel rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-yellow-500/10 flex flex-col justify-between relative overflow-hidden";
+          adCard.innerHTML = `
+            <div class="absolute inset-0 vip-blur flex flex-col items-center justify-center p-4 bg-slate-950/40">
+              <span class="text-sm font-black text-amber-400 tracking-widest uppercase">VIP ONLY CONTENT</span>
+              <p class="text-xs text-slate-300 text-center mt-1">Fonctionnalité exclusive et profils cachés</p>
+            </div>
+            <div class="relative z-10 text-center py-4">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center"><i class="fa-solid fa-crown"></i></div>
+              <h4 class="font-bold text-white text-sm">Passez au VIP !</h4>
+              <p class="text-[11px] text-slate-400 mt-1">Débloquez l'intégralité des contacts et supprimez les publicités.</p>
+              <button onclick="openVipModal()" class="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition">Devenir VIP</button>
+            </div>
+          `;
+          grid.appendChild(adCard);
+        }
       });
+    }
+
+    function openVipModal() { document.getElementById('vip-modal').classList.remove('hidden'); }
+    function closeVipModal() { document.getElementById('vip-modal').classList.add('hidden'); }
+
+    function validerCodeVip() {
+      const code = document.getElementById('vip-code-input').value.trim();
+      if (customCodes[code]) {
+        userRole = customCodes[code];
+        localStorage.setItem('userRole', userRole);
+        closeVipModal();
+        updateInterfaceRole();
+        alert(userRole === 'extra' ? "Code Extra validé ! Vous êtes Administrateur." : "Code VIP validé avec succès !");
+      } else {
+        alert("Code VIP invalide.");
+      }
+    }
+
+    function demanderVip() {
+      alert("Votre demande de code VIP a bien été transmise à l'administrateur Extra !");
+      closeVipModal();
+    }
+
+    function openAdminModal() {
+      document.getElementById('admin-modal').classList.remove('hidden');
+      renderAdminPanel();
+    }
+    function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+
+    function creerCodeAdmin() {
+      const name = document.getElementById('new-code-name').value.trim();
+      const type = document.getElementById('new-code-type').value;
+      if (name) {
+        customCodes[name] = type;
+        localStorage.setItem('customCodes', JSON.stringify(customCodes));
+        document.getElementById('new-code-name').value = '';
+        renderAdminPanel();
+        alert("Code créé avec succès !");
+      }
+    }
+
+    function renderAdminPanel() {
+      const listDiv = document.getElementById('codes-list');
+      listDiv.innerHTML = Object.entries(customCodes).map(([c, t]) => `<div>• <strong>${c}</strong> (${t})</div>`).join('');
+
+      const visDiv = document.getElementById('admin-visibility-list');
+      visDiv.innerHTML = rawData.map(item => `
+        <label class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs cursor-pointer">
+          <span class="text-slate-200 font-medium">${item.displayName} <span class="text-slate-500">(${item.role})</span></span>
+          <input type="checkbox" ${hiddenProfiles.includes(item.displayName) ? 'checked' : ''} onchange="toggleHideProfile('${item.displayName.replace(/'/g, "\\'")}')" class="rounded bg-slate-800 border-slate-700 text-purple-600 focus:ring-purple-500">
+        </label>
+      `).join('');
+    }
+
+    function toggleHideProfile(name) {
+      if (hiddenProfiles.includes(name)) {
+        hiddenProfiles = hiddenProfiles.filter(n => n !== name);
+      } else {
+        hiddenProfiles.push(name);
+      }
+      localStorage.setItem('hiddenProfiles', JSON.stringify(hiddenProfiles));
+      renderCards();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -365,7 +471,6 @@
 
       const dropZone = document.getElementById('drop-zone');
       const fileInput = document.getElementById('file-input');
-
       dropZone.addEventListener('click', () => fileInput.click());
       fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -377,7 +482,7 @@
               dropZone.classList.add('hidden');
               initApp();
             } catch (err) {
-              alert("Erreur de format JSON.");
+              alert("Erreur de format JSON dans le fichier.");
             }
           };
           reader.readAsText(file);
