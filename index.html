@@ -27,9 +27,7 @@
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .glass-panel {
-      background: rgba(15, 23, 42, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(15, 23, 42, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .vip-blur { filter: blur(6px); user-select: none; pointer-events: none; }
@@ -45,6 +43,7 @@
         <div id="user-badge-status" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
           <i class="fa-solid fa-user"></i> Mode Normal
         </div>
+        <button id="logout-btn" onclick="deconnecter()" class="hidden text-xs text-red-400 hover:text-red-300 underline font-medium">Déconnexion</button>
         <span class="text-xs text-slate-400 hidden sm:inline">Collège Louis Lumière</span>
       </div>
 
@@ -119,6 +118,9 @@
     <!-- Grille des Cartes -->
     <div id="cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
+    <!-- Pagination -->
+    <div id="pagination-container" class="mt-8 flex justify-center items-center gap-3"></div>
+
     <div id="empty-state" class="hidden py-16 text-center">
       <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600"><i class="fa-solid fa-user-slash text-2xl"></i></div>
       <h3 class="text-base font-semibold text-slate-300">Aucun résultat trouvé</h3>
@@ -126,7 +128,7 @@
 
   </div>
 
-  <!-- MODALE VIP ACCESS -->
+  <!-- MODALE VIP ACCESS / DEMANDE -->
   <div id="vip-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
       <button onclick="closeVipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
@@ -144,50 +146,73 @@
           <button onclick="validerCodeVip()" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-md">Activer le code</button>
         </div>
 
-        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-2">
-          <h4 class="text-xs font-semibold text-brand-400 uppercase tracking-wider">Option 2 : Demander le VIP</h4>
-          <p class="text-xs text-slate-400">Envoyez une demande de code à l'administrateur Extra du collège.</p>
-          <button onclick="demanderVip()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs transition">Envoyer une demande</button>
+        <div class="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-semibold text-brand-400 uppercase tracking-wider">Option 2 : Envoyer une demande VIP</h4>
+          <input type="text" id="req-name" placeholder="Votre Nom et Prénom..." class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
+          <textarea id="req-msg" placeholder="Pourquoi souhaitez-vous devenir VIP ?" rows="2" class="w-full px-3.5 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none resize-none"></textarea>
+          <button onclick="envoyerDemandeVip()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl text-xs transition">Envoyer la demande</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODALE ADMIN EXTRA -->
-  <div id="admin-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-purple-500/30 rounded-3xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-      <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl"><i class="fa-solid fa-shield-halved"></i></div>
+  <!-- MODALE ADMIN EXTRA (PLEIN ÉCRAN) -->
+  <div id="admin-modal" class="fixed inset-0 bg-slate-950 z-50 hidden flex flex-col p-6 overflow-hidden">
+    <div class="flex justify-between items-center pb-4 border-b border-slate-800">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg"><i class="fa-solid fa-shield-halved"></i></div>
         <div>
-          <h3 class="text-xl font-bold text-white">Panneau VIP Extra (Admin)</h3>
-          <p class="text-xs text-slate-400">Gestion complète des codes et de la visibilité des profils.</p>
+          <h3 class="text-lg font-bold text-white">Panneau VIP Extra (Administration Complète)</h3>
+          <p class="text-xs text-slate-400">Gérez les codes, traitez les demandes VIP et configurez la visibilité des profils.</p>
         </div>
       </div>
+      <button onclick="closeAdminModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition flex items-center gap-2">
+        <i class="fa-solid fa-xmark"></i> Fermer le panneau
+      </button>
+    </div>
 
-      <div class="space-y-6">
-        <!-- Section Gestion des Codes -->
-        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Créer ou gérer les codes</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input type="text" id="new-code-name" placeholder="Nom du code..." class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
+    <!-- Contenu Plein Écran Scrollable -->
+    <div class="flex-1 overflow-y-auto py-6 space-y-6 max-w-7xl mx-auto w-full">
+      
+      <!-- Grille 2 Colonnes : Codes & Demandes VIP -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Gestion Codes -->
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Créer et gérer les codes</h4>
+          <div class="flex gap-2">
+            <input type="text" id="new-code-name" placeholder="Nom du code..." class="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
             <select id="new-code-type" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
-              <option value="vip">VIP Standard</option>
-              <option value="extra">VIP Extra (Admin)</option>
+              <option value="vip">VIP</option>
+              <option value="extra">Extra</option>
             </select>
-            <button onclick="creerCodeAdmin()" class="py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">Ajouter le code</button>
+            <button onclick="creerCodeAdmin()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl text-xs transition">Ajouter</button>
           </div>
-          <div id="codes-list" class="mt-3 space-y-2"></div>
+          <div id="codes-list" class="mt-2 space-y-2 max-h-40 overflow-y-auto pr-1"></div>
         </div>
 
-        <!-- Section Gestion Visibilité Profils -->
-        <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
-          <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Visibilité spécifique par profil</h4>
-          <p class="text-xs text-slate-500">Choisissez comment chaque profil doit se comporter selon le mode utilisateur.</p>
-          <div id="admin-visibility-list" class="max-h-56 overflow-y-auto space-y-2 pr-2"></div>
+        <!-- Demandes VIP Reçues -->
+        <div class="glass-panel p-5 rounded-2xl space-y-3">
+          <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center justify-between">
+            <span>Demandes VIP en attente</span>
+            <span id="req-count-badge" class="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300">0</span>
+          </h4>
+          <div id="admin-requests-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
         </div>
       </div>
+
+      <!-- Gestion Visibilité Profils avec barre de recherche dédiée -->
+      <div class="glass-panel p-5 rounded-2xl space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div>
+            <h4 class="text-xs font-semibold text-purple-400 uppercase tracking-wider">Gestion de la visibilité des profils</h4>
+            <p class="text-xs text-slate-500 mt-0.5">Visualisez et modifiez instantanément les profils cachés ou restreints.</p>
+          </div>
+          <input type="text" id="admin-search-profile" placeholder="Rechercher un profil à administrer..." class="w-full sm:w-72 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white outline-none">
+        </div>
+        
+        <div id="admin-visibility-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2"></div>
+      </div>
+
     </div>
   </div>
 
@@ -195,7 +220,12 @@
     let rawData = [];
     let userRole = localStorage.getItem('userRole') || 'normal';
     let customCodes = JSON.parse(localStorage.getItem('customCodes')) || { 'VIP2026': 'vip', 'ADMINEXTRA': 'extra' };
-    let hiddenProfiles = JSON.parse(localStorage.getItem('hiddenProfiles')) || {}; // ex: { "Nom Prénom": "normal" ou "vip" }
+    let hiddenProfiles = JSON.parse(localStorage.getItem('hiddenProfiles')) || {}; 
+    let vipRequests = JSON.parse(localStorage.getItem('vipRequests')) || [];
+
+    // Pagination state
+    let currentPage = 1;
+    const itemsPerPage = 12;
 
     const bgGradients = ['from-blue-600 to-indigo-600', 'from-emerald-600 to-teal-600', 'from-purple-600 to-pink-600', 'from-amber-500 to-orange-600', 'from-cyan-600 to-blue-600', 'from-rose-600 to-red-600'];
 
@@ -214,21 +244,33 @@
     function updateInterfaceRole() {
       const badge = document.getElementById('user-badge-status');
       const adminBtn = document.getElementById('admin-panel-btn');
+      const logoutBtn = document.getElementById('logout-btn');
 
       if (userRole === 'extra') {
         badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1.5";
         badge.innerHTML = `<i class="fa-solid fa-shield-halved"></i> VIP Extra (Admin)`;
         adminBtn.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
       } else if (userRole === 'vip') {
         badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5";
         badge.innerHTML = `<i class="fa-solid fa-crown"></i> VIP Actif`;
         adminBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
       } else {
         badge.className = "px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5";
         badge.innerHTML = `<i class="fa-solid fa-user"></i> Mode Normal`;
         adminBtn.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
       }
+      currentPage = 1;
       renderCards();
+    }
+
+    function deconnecter() {
+      userRole = 'normal';
+      localStorage.setItem('userRole', 'normal');
+      updateInterfaceRole();
+      alert("Vous êtes déconnecté. Retour en mode Normal.");
     }
 
     async function loadData() {
@@ -278,6 +320,7 @@
     function renderCards() {
       const grid = document.getElementById('cards-grid');
       const emptyState = document.getElementById('empty-state');
+      const paginationContainer = document.getElementById('pagination-container');
       
       const search = document.getElementById('search-input').value.toLowerCase().trim();
       const roleFilter = document.getElementById('filter-role').value;
@@ -285,10 +328,9 @@
       const sortOrder = document.getElementById('sort-order').value;
 
       let filtered = rawData.filter(item => {
-        const hideLevel = hiddenProfiles[item.displayName]; // 'normal', 'vip', ou undefined
+        const hideLevel = hiddenProfiles[item.displayName]; 
         if (userRole === 'normal' && hideLevel === 'normal') return false;
         if (userRole === 'vip' && hideLevel === 'vip') return false;
-        // En extra, rien n'est masqué
 
         const matchesSearch = item.displayName.toLowerCase().includes(search) || (item.class && item.class.toLowerCase().includes(search));
         const matchesRole = roleFilter === 'ALL' || item.role === roleFilter;
@@ -303,6 +345,7 @@
       });
 
       grid.innerHTML = '';
+      paginationContainer.innerHTML = '';
 
       if (filtered.length === 0) {
         emptyState.classList.remove('hidden');
@@ -311,12 +354,18 @@
 
       emptyState.classList.add('hidden');
 
-      filtered.forEach((item, index) => {
+      // Pagination logic
+      const totalPages = Math.ceil(filtered.length / itemsPerPage);
+      if (currentPage > totalPages) currentPage = totalPages;
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const paginatedItems = filtered.slice(startIdx, startIdx + itemsPerPage);
+
+      paginatedItems.forEach((item, index) => {
         const initials = getInitials(item.displayName);
         const gradient = getGradient(item.displayName);
 
         const card = document.createElement('div');
-        card.className = "glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all duration-150 flex flex-col justify-between";
+        card.className = "glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all flex flex-col justify-between";
 
         let cardHTML = `
           <div>
@@ -359,7 +408,7 @@
         card.innerHTML = cardHTML;
         grid.appendChild(card);
 
-        // Plus de pubs en mode normal (toutes les 3 cartes au lieu de 4)
+        // Pubs en mode normal (toutes les 3 cartes)
         if (userRole === 'normal' && (index + 1) % 3 === 0) {
           const adCard = document.createElement('div');
           adCard.className = "glass-panel rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-yellow-500/10 flex flex-col justify-between relative overflow-hidden";
@@ -378,6 +427,20 @@
           grid.appendChild(adCard);
         }
       });
+
+      // Render Pagination Buttons if needed
+      if (totalPages > 1) {
+        let pagHTML = `<button onclick="changerPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled class="opacity-40 cursor-not-allowed"' : ''} class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200">Précédent</button>`;
+        pagHTML += `<span class="text-xs text-slate-400 px-2">Page ${currentPage} / ${totalPages}</span>`;
+        pagHTML += `<button onclick="changerPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled class="opacity-40 cursor-not-allowed"' : ''} class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-slate-200">Suivant</button>`;
+        paginationContainer.innerHTML = pagHTML;
+      }
+    }
+
+    function changerPage(p) {
+      currentPage = p;
+      renderCards();
+      window.scrollTo({ top: 400, behavior: 'smooth' });
     }
 
     function openVipModal() { document.getElementById('vip-modal').classList.remove('hidden'); }
@@ -396,9 +459,19 @@
       }
     }
 
-    function demanderVip() {
-      alert("Votre demande de code VIP a bien été transmise à l'administrateur Extra !");
+    function envoyerDemandeVip() {
+      const name = document.getElementById('req-name').value.trim();
+      const msg = document.getElementById('req-msg').value.trim();
+      if (!name || !msg) {
+        alert("Veuillez remplir votre nom et votre message.");
+        return;
+      }
+      vipRequests.push({ name, msg, date: new Date().toLocaleDateString() });
+      localStorage.setItem('vipRequests', JSON.stringify(vipRequests));
+      document.getElementById('req-name').value = '';
+      document.getElementById('req-msg').value = '';
       closeVipModal();
+      alert("Votre demande VIP avec message a bien été transmise à l'administrateur !");
     }
 
     function openAdminModal() {
@@ -420,7 +493,7 @@
     }
 
     function supprimerCode(code) {
-      if (confirm(`Voulez-vous supprimer le code '${code}' ?`)) {
+      if (confirm(`Supprimer le code '${code}' ?`)) {
         delete customCodes[code];
         localStorage.setItem('customCodes', JSON.stringify(customCodes));
         renderAdminPanel();
@@ -433,7 +506,26 @@
       renderAdminPanel();
     }
 
+    function supprimerDemande(index) {
+      vipRequests.splice(index, 1);
+      localStorage.setItem('vipRequests', JSON.stringify(vipRequests));
+      renderAdminPanel();
+    }
+
+    function accepterDemande(index, nomPersonne) {
+      // Génère un code automatique VIP pour cette personne
+      const generatedCode = "VIP-" + nomPersonne.toUpperCase().split(' ')[0] + Math.floor(Math.random() * 900 + 100);
+      customCodes[generatedCode] = 'vip';
+      localStorage.setItem('customCodes', JSON.stringify(customCodes));
+      
+      vipRequests.splice(index, 1);
+      localStorage.setItem('vipRequests', JSON.stringify(vipRequests));
+      renderAdminPanel();
+      alert(`Demande acceptée ! Code VIP généré pour ${nomPersonne} : ${generatedCode}`);
+    }
+
     function renderAdminPanel() {
+      // 1. Liste des codes
       const listDiv = document.getElementById('codes-list');
       listDiv.innerHTML = Object.entries(customCodes).map(([c, t]) => `
         <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
@@ -451,13 +543,50 @@
         </div>
       `).join('');
 
+      // 2. Demandes VIP
+      document.getElementById('req-count-badge').textContent = vipRequests.length;
+      const reqDiv = document.getElementById('admin-requests-list');
+      if (vipRequests.length === 0) {
+        reqDiv.innerHTML = `<div class="text-xs text-slate-500 italic p-3 text-center">Aucune demande en attente.</div>`;
+      } else {
+        reqDiv.innerHTML = vipRequests.map((req, idx) => `
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 text-xs">
+            <div class="flex justify-between items-center">
+              <strong class="text-amber-300 font-semibold">${req.name}</strong>
+              <span class="text-[10px] text-slate-500">${req.date}</span>
+            </div>
+            <p class="text-slate-300 italic bg-slate-950/60 p-2 rounded border border-slate-800/80">« ${req.msg} »</p>
+            <div class="flex justify-end gap-2 pt-1">
+              <button onclick="accepterDemande(${idx}, '${req.name.replace(/'/g, "\\'")}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-medium">Accepter & Générer Code</button>
+              <button onclick="supprimerDemande(${idx})" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded">Refuser</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 3. Gestion Visibilité Profils avec barre de recherche admin
+      renderAdminVisibilityList();
+    }
+
+    function renderAdminVisibilityList() {
+      const searchAdmin = document.getElementById('admin-search-profile').value.toLowerCase().trim();
       const visDiv = document.getElementById('admin-visibility-list');
-      visDiv.innerHTML = rawData.map(item => {
+      
+      const filteredProfiles = rawData.filter(item => item.displayName.toLowerCase().includes(searchAdmin));
+
+      visDiv.innerHTML = filteredProfiles.map(item => {
         const currentHide = hiddenProfiles[item.displayName] || 'none';
+        let badgeStatus = '';
+        if (currentHide === 'normal') badgeStatus = `<span class="px-1.5 py-0.5 rounded text-[9px] bg-red-500/20 text-red-400">Masqué Normal</span>`;
+        if (currentHide === 'vip') badgeStatus = `<span class="px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-400">Masqué VIP</span>`;
+
         return `
-          <div class="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800 text-xs">
-            <span class="text-slate-200 font-medium">${item.displayName} <span class="text-slate-500">(${item.role})</span></span>
-            <select onchange="changerVisibiliteProfil('${item.displayName.replace(/'/g, "\\'")}', this.value)" class="bg-slate-800 text-slate-300 rounded px-2 py-1 text-[11px] outline-none border border-slate-700">
+          <div class="flex flex-col justify-between bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs gap-2">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-200 font-medium truncate">${item.displayName}</span>
+              ${badgeStatus}
+            </div>
+            <select onchange="changerVisibiliteProfil('${item.displayName.replace(/'/g, "\\'")}', this.value)" class="bg-slate-800 text-slate-300 rounded px-2 py-1.5 text-[11px] outline-none border border-slate-700">
               <option value="none" ${currentHide === 'none' ? 'selected' : ''}>Visible pour tous</option>
               <option value="normal" ${currentHide === 'normal' ? 'selected' : ''}>Masqué en Mode Normal</option>
               <option value="vip" ${currentHide === 'vip' ? 'selected' : ''}>Masqué en Mode Normal & VIP</option>
@@ -474,6 +603,7 @@
         hiddenProfiles[name] = level;
       }
       localStorage.setItem('hiddenProfiles', JSON.stringify(hiddenProfiles));
+      renderAdminVisibilityList();
       renderCards();
     }
 
@@ -485,18 +615,21 @@
 
       searchInput.addEventListener('input', () => {
         clearSearch.classList.toggle('hidden', searchInput.value.length === 0);
+        currentPage = 1;
         renderCards();
       });
 
       clearSearch.addEventListener('click', () => {
         searchInput.value = '';
         clearSearch.classList.add('hidden');
+        currentPage = 1;
         renderCards();
       });
 
-      document.getElementById('filter-role').addEventListener('change', renderCards);
-      document.getElementById('filter-class').addEventListener('change', renderCards);
-      document.getElementById('sort-order').addEventListener('change', renderCards);
+      document.getElementById('filter-role').addEventListener('change', () => { currentPage = 1; renderCards(); });
+      document.getElementById('filter-class').addEventListener('change', () => { currentPage = 1; renderCards(); });
+      document.getElementById('sort-order').addEventListener('change', () => { currentPage = 1; renderCards(); });
+      document.getElementById('admin-search-profile').addEventListener('input', renderAdminVisibilityList);
 
       const dropZone = document.getElementById('drop-zone');
       const fileInput = document.getElementById('file-input');
