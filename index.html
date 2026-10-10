@@ -323,9 +323,14 @@
       const sortOrder = document.getElementById('sort-order').value;
 
       let filtered = rawData.filter(item => {
-        const hideLevel = hiddenProfiles[item.displayName]; 
-        if (userRole === 'normal' && hideLevel === 'normal') return false;
+        const hideLevel = hiddenProfiles[item.displayName]; // 'normal', 'vip' ou undefined
+        
+        // Logique de visibilité corrigée :
+        // - En mode Normal : si le profil est masqué pour 'normal' ou 'vip', on l'enlève.
+        if (userRole === 'normal' && (hideLevel === 'normal' || hideLevel === 'vip')) return false;
+        // - En mode VIP : si le profil est masqué pour 'vip', on l'enlève (mais s'il était seulement masqué 'normal', il s'affiche car le VIP a les droits).
         if (userRole === 'vip' && hideLevel === 'vip') return false;
+        // - En mode Extra (Admin) : rien n'est masqué, tout s'affiche.
 
         const matchesSearch = item.displayName.toLowerCase().includes(search) || (item.class && item.class.toLowerCase().includes(search));
         const matchesRole = roleFilter === 'ALL' || item.role === roleFilter;
