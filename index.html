@@ -34,6 +34,15 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .vip-blur { filter: blur(5px); user-select: none; pointer-events: none; }
+    .vip-promo { background: linear-gradient(115deg, rgba(245,158,11,.13), rgba(124,58,237,.12)); border: 1px solid rgba(245,158,11,.28); }
+    .vip-benefit { display: inline-flex; align-items: center; gap: .4rem; border: 1px solid rgba(245,158,11,.22); background: rgba(15,23,42,.55); border-radius: 999px; padding: .4rem .65rem; font-size: .7rem; color: #e2e8f0; }
+    .profile-card { min-width: 0; }
+    .compact-mode .profile-card { padding: .8rem !important; }
+    .compact-mode .profile-card .profile-details { display: none; }
+    body[data-vip-theme="violet"] { --theme-accent: #a78bfa; }
+    body[data-vip-theme="emerald"] { --theme-accent: #34d399; }
+    body[data-vip-theme="blue"] { --theme-accent: #38bdf8; }
+    .focus-ring:focus-visible { outline: 2px solid var(--theme-accent, #38bdf8); outline-offset: 3px; }
   </style>
 </head>
 <body class="min-h-screen selection:bg-brand-500 selection:text-white pb-16">
@@ -46,6 +55,7 @@
         <div id="user-badge-status" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
           <i class="fa-solid fa-user"></i> Mode Normal
         </div>
+        <span id="user-cosmetic-badge" class="hidden px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/15 text-sky-200 border border-sky-500/20"></span>
         <button id="logout-btn" onclick="deconnecter()" class="hidden text-xs text-red-400 hover:text-red-300 underline font-medium">Déconnexion</button>
         <span class="text-xs text-slate-400 hidden sm:inline">Collège Louis Lumière</span>
       </div>
@@ -81,6 +91,24 @@
       </div>
     </header>
 
+    <!-- Bannière promo VIP : masquée automatiquement pour VIP/Extra -->
+    <section id="vip-promo-banner" class="vip-promo rounded-2xl p-5 mb-6 shadow-xl">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2"><span class="px-2 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider"><i class="fa-solid fa-crown mr-1"></i> Annuaire VIP</span><span class="text-[10px] text-slate-400">Options supplémentaires</span></div>
+          <h2 class="text-lg sm:text-xl font-extrabold text-white">Passe au VIP et personnalise ton annuaire</h2>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1">Moins de distractions, recherches plus rapides et affichage à ta façon.</p>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="vip-benefit"><i class="fa-solid fa-ban text-amber-300"></i> Sans bannières promo</span>
+            <span class="vip-benefit"><i class="fa-solid fa-eye-slash text-amber-300"></i> Masquer des profils pour toi</span>
+            <span class="vip-benefit"><i class="fa-solid fa-users text-amber-300"></i> Voir les profils autorisés aux VIP</span>
+            <span class="vip-benefit"><i class="fa-solid fa-star text-amber-300"></i> Favoris et recherches enregistrées</span>
+          </div>
+        </div>
+        <button type="button" onclick="openVipModal()" class="shrink-0 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 text-sm font-extrabold shadow-lg transition"><i class="fa-solid fa-crown mr-2"></i>Devenir VIP</button>
+      </div>
+    </section>
+
     <!-- Bar de recherche & Filtres -->
     <div class="mb-8 p-4 rounded-2xl glass-panel shadow-2xl space-y-4">
       <div class="relative w-full">
@@ -108,6 +136,41 @@
         </select>
       </div>
     </div>
+
+    <!-- Outils avancés VIP et préférences locales -->
+    <section class="glass-panel rounded-2xl p-4 mb-6 space-y-3">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-sliders text-brand-400 mr-2"></i>Outils de l’annuaire</h2>
+          <p class="text-[11px] text-slate-500 mt-1">Les préférences personnelles sont sauvegardées dans ce navigateur.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button id="show-favorites-btn" type="button" onclick="basculerFavoris()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-amber-400"><i class="fa-solid fa-star mr-1 text-amber-300"></i>Mes favoris <span id="favorites-count" class="ml-1 text-slate-400">0</span></button>
+          <button id="manage-hidden-btn" type="button" onclick="ouvrirGestionProfilsMasques()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-rose-400"><i class="fa-solid fa-eye-slash mr-1"></i>Profils masqués</button>
+          <button id="compact-toggle-btn" type="button" onclick="basculerModeCompact()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-grip mr-1"></i>Vue compacte</button>
+          <button type="button" onclick="ouvrirCentreActivite()" class="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-bell mr-1"></i>Activité <span id="activity-count" class="ml-1 text-slate-400">0</span></button>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-slate-800/70">
+        <div>
+          <label for="saved-search-select" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Recherches enregistrées (VIP)</label>
+          <select id="saved-search-select" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="">Choisir une recherche…</option></select>
+        </div>
+        <div>
+          <label for="search-history-select" class="block text-[10px] uppercase tracking-wider text-slate-500 mb-1">Historique récent</label>
+          <select id="search-history-select" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="">Reprendre une recherche…</option></select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button id="save-search-btn" type="button" onclick="enregistrerRecherche()" class="flex-1 px-3 py-2 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs font-semibold hover:bg-amber-500/25"><i class="fa-solid fa-bookmark mr-1"></i>Enregistrer la recherche</button>
+          <select id="theme-select" aria-label="Thème de l’annuaire" class="max-w-28 px-2 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="blue">Bleu</option><option value="violet">Violet</option><option value="emerald">Émeraude</option></select>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/70">
+        <label for="cosmetic-badge-select" class="text-[10px] uppercase tracking-wider text-slate-500">Badge décoratif VIP</label>
+        <select id="cosmetic-badge-select" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="none">Aucun badge</option><option value="collector">Collectionneur ⭐</option><option value="explorer">Explorateur 🧭</option><option value="organise">Bien organisé ✨</option></select>
+        <span class="text-[10px] text-slate-500">Décoratif uniquement, enregistré sur cet appareil.</span>
+      </div>
+    </section>
 
     <!-- Drop de secours -->
     <div id="drop-zone" class="hidden mb-8 p-6 rounded-2xl border-2 border-dashed border-slate-800 bg-slate-900/40 text-center cursor-pointer">
@@ -137,7 +200,13 @@
       <div class="text-center mb-6">
         <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl"><i class="fa-solid fa-crown"></i></div>
         <h3 class="text-xl font-bold text-white">Portail VIP & VIP Extra</h3>
-        <p class="text-xs text-slate-400 mt-1">Débloquez l'accès complet et supprimez les restrictions.</p>
+        <p class="text-xs text-slate-400 mt-1">Personnalise ton annuaire et profite des outils avancés.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 text-left">
+          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-ban text-amber-300 mr-2"></i>Pas de bannières promotionnelles</div>
+          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-eye-slash text-amber-300 mr-2"></i>Masquer des profils pour soi</div>
+          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-users text-amber-300 mr-2"></i>Profils autorisés aux VIP</div>
+          <div class="rounded-lg bg-slate-950 border border-slate-800 p-3 text-xs text-slate-200"><i class="fa-solid fa-star text-amber-300 mr-2"></i>Favoris, thèmes et recherches sauvées</div>
+        </div>
       </div>
 
       <div class="space-y-4">
@@ -177,6 +246,23 @@
         <button id="send-removal-request-btn" type="button" onclick="envoyerDemandeRetrait()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"><i class="fa-solid fa-paper-plane mr-1"></i> Envoyer la demande</button>
       </div>
       <p id="removal-request-status" role="status" aria-live="polite" class="text-xs text-slate-400 mt-3"></p>
+    </div>
+  </div>
+
+  <!-- MODALE : profils masqués uniquement pour l'utilisateur -->
+  <div id="hidden-profiles-modal" class="fixed inset-0 bg-slate-950/85 z-[70] hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="text-lg font-bold text-white">Profils masqués pour moi</h3><p class="text-xs text-slate-400 mt-1">Cela ne masque pas le profil aux autres visiteurs.</p></div><button type="button" onclick="fermerGestionProfilsMasques()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-200"><i class="fa-solid fa-xmark"></i></button></div>
+      <div id="hidden-profiles-list" class="space-y-2 max-h-[55vh] overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <!-- MODALE : centre d'activité local -->
+  <div id="activity-modal" class="fixed inset-0 bg-slate-950/85 z-[70] hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="text-lg font-bold text-white"><i class="fa-solid fa-bell text-brand-400 mr-2"></i>Centre d’activité</h3><p class="text-xs text-slate-400 mt-1">Historique des actions sur cet appareil.</p></div><button type="button" onclick="fermerCentreActivite()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-200"><i class="fa-solid fa-xmark"></i></button></div>
+      <div id="activity-list" class="space-y-2 max-h-[55vh] overflow-y-auto"></div>
+      <div class="flex justify-end mt-4"><button type="button" onclick="effacerCentreActivite()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Effacer l’historique</button></div>
     </div>
   </div>
 
@@ -238,6 +324,12 @@
         <div id="admin-removal-requests-list" class="grid grid-cols-1 lg:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
           <p class="text-xs text-slate-500 italic p-3">Les demandes apparaîtront ici.</p>
         </div>
+      </div>
+
+      <!-- Signalements de corrections -->
+      <div class="glass-panel p-5 rounded-2xl space-y-3">
+        <div class="flex items-center justify-between gap-3"><div><h4 class="text-xs font-semibold text-sky-300 uppercase tracking-wider">Signalements de corrections</h4><p class="text-xs text-slate-500 mt-1">Les visiteurs peuvent signaler une erreur ; aucune donnée n’est modifiée automatiquement.</p></div><button type="button" onclick="renderAdminCorrectionRequests()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-200 text-xs font-semibold"><i class="fa-solid fa-rotate mr-1"></i>Actualiser</button></div>
+        <div id="admin-correction-requests-list" class="grid grid-cols-1 lg:grid-cols-2 gap-3 max-h-[360px] overflow-y-auto"></div>
       </div>
 
       <!-- Gestion Visibilité Profils avec barre de recherche dédiée -->
@@ -349,6 +441,17 @@
     let hiddenProfiles = lireJSONStockage('hiddenProfiles', {});
     let vipRequests = lireJSONStockage('vipRequests', []);
     let removalRequestsLocal = lireJSONStockage('removalRequests', []);
+    let userFavorites = lireJSONStockage('userFavorites', []);
+    let userHiddenProfiles = lireJSONStockage('userHiddenProfiles', []);
+    let savedSearches = lireJSONStockage('savedSearches', []);
+    let searchHistory = lireJSONStockage('searchHistory', []);
+    let activityNotifications = lireJSONStockage('activityNotifications', []);
+    let correctionRequestsLocal = lireJSONStockage('correctionRequests', []);
+    let showFavoritesOnly = false;
+    let compactMode = lireJSONStockage('compactMode', false) === true;
+    let currentTheme = lireJSONStockage('directoryTheme', 'blue');
+    let cosmeticBadge = lireJSONStockage('cosmeticBadge', 'none');
+    let adminCorrectionRequestCache = [];
     let activeRemovalProfile = null;
     let adminRemovalRequestCache = [];
 
@@ -368,6 +471,284 @@
       // Compatibilité avec les anciens réglages, qui étaient indexés uniquement par nom.
       if (Object.prototype.hasOwnProperty.call(hiddenProfiles, item.displayName)) return hiddenProfiles[item.displayName];
       return 'none';
+    }
+
+
+    function echapperHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+
+    function estVip() { return userRole === 'vip' || userRole === 'extra'; }
+
+    function normaliserRecherche(value) {
+      return String(value ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr-FR').trim();
+    }
+
+    function ajouterActivite(titre, detail) {
+      activityNotifications.unshift({ id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, titre: String(titre).slice(0,100), detail: String(detail).slice(0,250), date: new Date().toISOString() });
+      activityNotifications = activityNotifications.slice(0, 30);
+      enregistrerJSONStockage('activityNotifications', activityNotifications);
+      actualiserCompteurActivite();
+    }
+
+    function actualiserCompteurActivite() {
+      const count = document.getElementById('activity-count');
+      if (count) count.textContent = String(activityNotifications.length);
+    }
+
+    function actualiserCompteurFavoris() {
+      const count = document.getElementById('favorites-count');
+      if (count) count.textContent = String(userFavorites.length);
+    }
+
+    function actualiserControleVIP() {
+      const banner = document.getElementById('vip-promo-banner');
+      if (banner) banner.classList.toggle('hidden', estVip());
+      document.body.classList.toggle('compact-mode', compactMode && estVip());
+      document.body.dataset.vipTheme = currentTheme;
+      const hiddenBtn = document.getElementById('manage-hidden-btn');
+      const favBtn = document.getElementById('show-favorites-btn');
+      const saveBtn = document.getElementById('save-search-btn');
+      const themeSelect = document.getElementById('theme-select');
+      const compactBtn = document.getElementById('compact-toggle-btn');
+      [hiddenBtn, favBtn, saveBtn, themeSelect, compactBtn].forEach(el => { if (el) el.classList.toggle('opacity-70', !estVip()); });
+      if (themeSelect) themeSelect.value = currentTheme;
+      const badgeSelect = document.getElementById('cosmetic-badge-select');
+      if (badgeSelect) badgeSelect.value = cosmeticBadge;
+      actualiserBadgeDecoratif();
+      if (compactBtn) compactBtn.innerHTML = compactMode && estVip() ? '<i class="fa-solid fa-grip mr-1"></i>Vue complète' : '<i class="fa-solid fa-grip mr-1"></i>Vue compacte';
+      actualiserCompteurFavoris();
+      actualiserCompteurActivite();
+      actualiserListeRecherches();
+    }
+
+    function actualiserListeRecherches() {
+      const select = document.getElementById('saved-search-select');
+      if (select) {
+        const current = select.value;
+        select.innerHTML = '<option value="">Choisir une recherche…</option>';
+        savedSearches.forEach((item, index) => {
+          const option = document.createElement('option'); option.value = String(index); option.textContent = item.name || `Recherche ${index + 1}`; select.appendChild(option);
+        });
+        if (current && Number(current) < savedSearches.length) select.value = current;
+      }
+      const history = document.getElementById('search-history-select');
+      if (history) {
+        const current = history.value;
+        history.innerHTML = '<option value="">Reprendre une recherche…</option>';
+        searchHistory.forEach((item, index) => {
+          const option = document.createElement('option'); option.value = String(index); option.textContent = item || '(recherche vide)'; history.appendChild(option);
+        });
+        if (current && Number(current) < searchHistory.length) history.value = current;
+      }
+    }
+
+    function enregistrerHistoriqueRecherche() {
+      const value = String(document.getElementById('search-input')?.value || '').trim();
+      if (!value) return;
+      searchHistory = [value, ...searchHistory.filter(item => item !== value)].slice(0, 8);
+      enregistrerJSONStockage('searchHistory', searchHistory);
+      actualiserListeRecherches();
+    }
+
+    function basculerFavoris() {
+      if (!estVip()) { openVipModal(); return; }
+      showFavoritesOnly = !showFavoritesOnly;
+      const btn = document.getElementById('show-favorites-btn');
+      if (btn) btn.classList.toggle('border-amber-400', showFavoritesOnly);
+      ajouterActivite(showFavoritesOnly ? 'Favoris affichés' : 'Affichage complet', showFavoritesOnly ? 'Filtre des favoris activé.' : 'Tous les profils autorisés sont affichés.');
+      currentPage = 1; renderCards();
+    }
+
+    function basculerFavori(item) {
+      if (!estVip()) { openVipModal(); return; }
+      const key = getProfileKey(item);
+      if (userFavorites.includes(key)) {
+        userFavorites = userFavorites.filter(value => value !== key);
+        ajouterActivite('Favori retiré', item.displayName || 'Profil');
+      } else {
+        userFavorites.push(key);
+        ajouterActivite('Profil ajouté aux favoris', item.displayName || 'Profil');
+      }
+      enregistrerJSONStockage('userFavorites', userFavorites);
+      actualiserCompteurFavoris(); renderCards();
+    }
+
+    function basculerMasquagePersonnel(item) {
+      if (!estVip()) { openVipModal(); return; }
+      const key = getProfileKey(item);
+      if (userHiddenProfiles.includes(key)) {
+        userHiddenProfiles = userHiddenProfiles.filter(value => value !== key);
+        ajouterActivite('Profil réaffiché pour moi', item.displayName || 'Profil');
+      } else {
+        userHiddenProfiles.push(key);
+        ajouterActivite('Profil masqué pour moi', item.displayName || 'Profil');
+      }
+      enregistrerJSONStockage('userHiddenProfiles', userHiddenProfiles);
+      renderCards();
+    }
+
+    function ouvrirGestionProfilsMasques() {
+      if (!estVip()) { openVipModal(); return; }
+      afficherProfilsMasquesPersonnels();
+      document.getElementById('hidden-profiles-modal').classList.remove('hidden');
+    }
+
+    function fermerGestionProfilsMasques() { document.getElementById('hidden-profiles-modal').classList.add('hidden'); }
+
+    function afficherProfilsMasquesPersonnels() {
+      const list = document.getElementById('hidden-profiles-list');
+      if (!list) return;
+      list.innerHTML = '';
+      const hidden = rawData.filter(item => userHiddenProfiles.includes(getProfileKey(item)));
+      if (!hidden.length) {
+        const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Tu n’as masqué aucun profil pour le moment.'; list.appendChild(p); return;
+      }
+      hidden.forEach(item => {
+        const row = document.createElement('div'); row.className = 'flex items-center justify-between gap-3 bg-slate-950 border border-slate-800 rounded-xl p-3';
+        const label = document.createElement('span'); label.className = 'text-sm text-slate-200'; label.textContent = `${item.displayName || 'Profil'}${item.class ? ` · Classe ${item.class}` : ''}`;
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'shrink-0 px-3 py-2 rounded-lg bg-sky-600 text-white text-xs font-semibold'; btn.textContent = 'Réafficher';
+        btn.addEventListener('click', () => { userHiddenProfiles = userHiddenProfiles.filter(value => value !== getProfileKey(item)); enregistrerJSONStockage('userHiddenProfiles', userHiddenProfiles); ajouterActivite('Profil réaffiché pour moi', item.displayName || 'Profil'); afficherProfilsMasquesPersonnels(); renderCards(); });
+        row.append(label, btn); list.appendChild(row);
+      });
+    }
+
+    function basculerModeCompact() {
+      if (!estVip()) { openVipModal(); return; }
+      compactMode = !compactMode; enregistrerJSONStockage('compactMode', compactMode); actualiserControleVIP(); renderCards();
+      ajouterActivite('Affichage modifié', compactMode ? 'Vue compacte activée.' : 'Vue complète activée.');
+    }
+
+    function enregistrerRecherche() {
+      if (!estVip()) { openVipModal(); return; }
+      const name = prompt('Donne un nom à cette recherche :', `Ma recherche ${savedSearches.length + 1}`);
+      if (!name || !name.trim()) return;
+      const saved = { name: name.trim().slice(0,60), search: document.getElementById('search-input').value, role: document.getElementById('filter-role').value, className: document.getElementById('filter-class').value, sort: document.getElementById('sort-order').value, date: new Date().toISOString() };
+      savedSearches.unshift(saved); savedSearches = savedSearches.slice(0, 20);
+      enregistrerJSONStockage('savedSearches', savedSearches); actualiserListeRecherches();
+      const select = document.getElementById('saved-search-select'); if (select) select.value = '0';
+      ajouterActivite('Recherche enregistrée', saved.name);
+    }
+
+    function appliquerRechercheEnregistree(index) {
+      if (!estVip()) { openVipModal(); return; }
+      const item = savedSearches[Number(index)]; if (!item) return;
+      document.getElementById('search-input').value = item.search || '';
+      document.getElementById('filter-role').value = item.role || 'ALL';
+      document.getElementById('filter-class').value = item.className || 'ALL';
+      document.getElementById('sort-order').value = item.sort || 'AZ';
+      document.getElementById('clear-search').classList.toggle('hidden', !item.search);
+      enregistrerHistoriqueRecherche(); currentPage = 1; renderCards();
+      ajouterActivite('Recherche réouverte', item.name || 'Recherche enregistrée');
+    }
+
+    function appliquerRechercheHistorique(index) {
+      const query = searchHistory[Number(index)]; if (query === undefined) return;
+      document.getElementById('search-input').value = query;
+      document.getElementById('clear-search').classList.toggle('hidden', !query);
+      currentPage = 1; renderCards();
+    }
+
+    function actualiserBadgeDecoratif() {
+      const badge = document.getElementById('user-cosmetic-badge');
+      if (!badge) return;
+      const presets = {
+        collector: { text: 'Collectionneur ⭐', classes: 'bg-amber-500/15 text-amber-200 border-amber-500/20' },
+        explorer: { text: 'Explorateur 🧭', classes: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/20' },
+        organise: { text: 'Bien organisé ✨', classes: 'bg-violet-500/15 text-violet-200 border-violet-500/20' }
+      };
+      const preset = estVip() ? presets[cosmeticBadge] : null;
+      badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold border ' + (preset ? preset.classes : 'hidden');
+      badge.textContent = preset ? preset.text : '';
+      badge.classList.toggle('hidden', !preset);
+    }
+
+    function changerBadgeDecoratif(value) {
+      if (!estVip()) {
+        const select = document.getElementById('cosmetic-badge-select');
+        if (select) select.value = cosmeticBadge;
+        openVipModal();
+        return;
+      }
+      cosmeticBadge = ['none', 'collector', 'explorer', 'organise'].includes(value) ? value : 'none';
+      enregistrerJSONStockage('cosmeticBadge', cosmeticBadge);
+      actualiserBadgeDecoratif();
+      ajouterActivite('Badge décoratif modifié', cosmeticBadge === 'none' ? 'Aucun badge.' : 'Nouveau badge décoratif appliqué.');
+    }
+
+    function changerTheme(value) {
+      if (!estVip()) { document.getElementById('theme-select').value = currentTheme; openVipModal(); return; }
+      currentTheme = ['blue','violet','emerald'].includes(value) ? value : 'blue';
+      enregistrerJSONStockage('directoryTheme', currentTheme); document.body.dataset.vipTheme = currentTheme;
+      ajouterActivite('Thème modifié', `Thème ${currentTheme} activé.`);
+    }
+
+    function ouvrirCentreActivite() {
+      const list = document.getElementById('activity-list'); list.innerHTML = '';
+      if (!activityNotifications.length) { const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Aucune activité enregistrée sur cet appareil.'; list.appendChild(p); }
+      activityNotifications.forEach(item => {
+        const card = document.createElement('div'); card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3';
+        const title = document.createElement('p'); title.className = 'text-sm font-semibold text-slate-200'; title.textContent = item.titre || 'Activité';
+        const detail = document.createElement('p'); detail.className = 'text-xs text-slate-400 mt-1'; detail.textContent = item.detail || '';
+        const date = document.createElement('p'); date.className = 'text-[10px] text-slate-600 mt-2'; date.textContent = item.date ? new Date(item.date).toLocaleString('fr-FR') : '';
+        card.append(title, detail, date); list.appendChild(card);
+      });
+      document.getElementById('activity-modal').classList.remove('hidden');
+    }
+    function fermerCentreActivite() { document.getElementById('activity-modal').classList.add('hidden'); }
+    function effacerCentreActivite() { activityNotifications = []; enregistrerJSONStockage('activityNotifications', activityNotifications); ouvrirCentreActivite(); actualiserCompteurActivite(); }
+
+    async function signalerCorrection(item) {
+      const reason = prompt(`Décris la correction à apporter au profil « ${String(item.displayName || 'Profil').slice(0,120)} » :`);
+      if (!reason || reason.trim().length < 5) { if (reason !== null) alert('Écris au moins 5 caractères pour décrire la correction.'); return; }
+      const request = { profileKey: getProfileKey(item), profileName: String(item.displayName || '').slice(0,200), profileRole: String(item.role || '').slice(0,80), profileClass: String(item.class || '').slice(0,80), reason: reason.trim().slice(0,800), status: 'pending' };
+      try {
+        if (cloudEstConfigure()) {
+          await firebaseDb.collection('correction_requests').add({ ...request, createdAt: window.firebase.firestore.FieldValue.serverTimestamp() });
+          ajouterActivite('Correction signalée', item.displayName || 'Profil');
+          alert('Merci ! Le signalement a été envoyé à l’administration. Aucune donnée n’a été modifiée automatiquement.');
+        } else {
+          correctionRequestsLocal.unshift({ ...request, id: `local-${Date.now()}`, createdAt: new Date().toISOString() });
+          if (!enregistrerJSONStockage('correctionRequests', correctionRequestsLocal)) throw new Error('Échec de sauvegarde locale');
+          ajouterActivite('Correction signalée localement', item.displayName || 'Profil');
+          alert('Signalement enregistré dans ce navigateur. Configure Firebase pour le partager avec l’administration.');
+        }
+      } catch (error) {
+        alert(`Le signalement n’a pas été envoyé : ${error.message || error}. Vérifie les règles Firestore de correction_requests.`);
+      }
+    }
+
+    async function renderAdminCorrectionRequests() {
+      const list = document.getElementById('admin-correction-requests-list'); if (!list) return;
+      list.innerHTML = '';
+      let requests = [];
+      if (cloudEstConfigure()) {
+        if (!utilisateurEstAdminCloud()) { const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Connecte le compte administrateur Firebase dans la section Sauvegarde cloud pour consulter les signalements partagés.'; list.appendChild(p); return; }
+        try { const snap = await firebaseDb.collection('correction_requests').orderBy('createdAt','desc').limit(100).get(); requests = snap.docs.map(doc => ({id:doc.id,...doc.data(),source:'cloud'})); }
+        catch (error) { const p = document.createElement('p'); p.className = 'text-xs text-rose-300 p-3'; p.textContent = `Impossible de charger les signalements : ${error.message || error}. Vérifie les règles Firestore.`; list.appendChild(p); return; }
+      } else requests = correctionRequestsLocal.map(item => ({...item,source:'local'}));
+      adminCorrectionRequestCache = requests;
+      if (!requests.length) { const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Aucun signalement pour le moment.'; list.appendChild(p); return; }
+      requests.forEach(req => {
+        const card = document.createElement('div'); card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3 space-y-2';
+        const title = document.createElement('strong'); title.className = 'text-sm text-sky-200'; title.textContent = req.profileName || 'Profil';
+        const meta = document.createElement('p'); meta.className = 'text-[10px] text-slate-500'; meta.textContent = `${req.profileRole || ''}${req.profileClass ? ` · Classe ${req.profileClass}` : ''} · ${req.status || 'pending'}`;
+        const reason = document.createElement('p'); reason.className = 'text-xs text-slate-300 whitespace-pre-wrap break-words'; reason.textContent = req.reason || '';
+        card.append(title, meta, reason);
+        if ((req.status || 'pending') === 'pending') { const actions = document.createElement('div'); actions.className = 'flex justify-end gap-2'; for (const [status,label] of [['resolved','Marquer traité'],['dismissed','Ignorer']]) { const btn = document.createElement('button'); btn.type='button'; btn.className='px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200'; btn.textContent=label; btn.addEventListener('click', () => traiterCorrection(req.id, status)); actions.appendChild(btn); } card.appendChild(actions); }
+        list.appendChild(card);
+      });
+    }
+
+    async function traiterCorrection(id, status) {
+      const req = adminCorrectionRequestCache.find(item => item.id === id); if (!req) return;
+      if (!confirm(status === 'resolved' ? 'Marquer ce signalement comme traité ?' : 'Ignorer ce signalement ?')) return;
+      try {
+        if (req.source === 'cloud' && cloudEstConfigure()) await firebaseDb.collection('correction_requests').doc(id).update({ status, reviewedAt: window.firebase.firestore.FieldValue.serverTimestamp() });
+        else { correctionRequestsLocal = correctionRequestsLocal.map(item => item.id === id ? {...item,status,reviewedAt:new Date().toISOString()} : item); enregistrerJSONStockage('correctionRequests', correctionRequestsLocal); }
+        ajouterActivite('Signalement mis à jour', status === 'resolved' ? 'Signalement marqué comme traité.' : 'Signalement ignoré.');
+        await renderAdminCorrectionRequests();
+      } catch (error) { alert(`Impossible de mettre à jour le signalement : ${error.message || error}`); }
     }
 
     let currentPage = 1;
@@ -409,6 +790,7 @@
         logoutBtn.classList.add('hidden');
       }
       currentPage = 1;
+      actualiserControleVIP();
       renderCards();
     }
 
@@ -476,11 +858,16 @@
 
       let filtered = rawData.filter(item => {
         const hideLevel = getProfileVisibility(item);
+        // Respecte les choix admin : VIP voit les profils ouverts aux VIP, jamais ceux masqués pour tous ou pour VIP.
         if (hideLevel === 'all') return false;
         if (userRole === 'normal' && (hideLevel === 'normal' || hideLevel === 'vip')) return false;
         if (userRole === 'vip' && hideLevel === 'vip') return false;
+        if (estVip() && userHiddenProfiles.includes(getProfileKey(item))) return false;
+        if (showFavoritesOnly && !userFavorites.includes(getProfileKey(item))) return false;
 
-        const matchesSearch = item.displayName.toLowerCase().includes(search) || (item.class && item.class.toLowerCase().includes(search));
+        const searchableText = normaliserRecherche([item.displayName, item.class, item.role, item.school, item.motto, ...(Array.isArray(item.relations) ? item.relations : [])].join(' '));
+        const normalizedQuery = normaliserRecherche(search);
+        const matchesSearch = !normalizedQuery || searchableText.includes(normalizedQuery);
         const matchesRole = roleFilter === 'ALL' || item.role === roleFilter;
         const matchesClass = classFilter === 'ALL' || item.class === classFilter;
         return matchesSearch && matchesRole && matchesClass;
@@ -512,20 +899,20 @@
         const gradient = getGradient(item.displayName);
 
         const card = document.createElement('div');
-        card.className = "glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all flex flex-col justify-between";
+        card.className = "profile-card glass-panel rounded-2xl p-5 hover:border-slate-700/80 transition-all flex flex-col justify-between";
 
         let cardHTML = `
           <div>
             <div class="flex items-start justify-between gap-3 mb-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${gradient} flex items-center justify-center text-white font-bold text-base shadow-lg shrink-0">${initials}</div>
-              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-500/15 text-brand-400 border border-brand-500/20">${item.role === 'Élève' ? 'Classe ' + (item.class || 'N/C') : item.role}</span>
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${gradient} flex items-center justify-center text-white font-bold text-base shadow-lg shrink-0">${echapperHTML(initials)}</div>
+              <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-brand-500/15 text-brand-400 border border-brand-500/20">${echapperHTML(item.role === 'Élève' ? 'Classe ' + (item.class || 'N/C') : (item.role || 'Profil'))}</span>
             </div>
-            <h3 class="font-bold text-white text-base leading-snug">${item.displayName}</h3>
-            <p class="text-xs text-slate-400 mt-1">${item.school || 'CLG-LOUIS LUMIERE'}</p>
+            <h3 class="font-bold text-white text-base leading-snug">${echapperHTML(item.displayName || 'Profil sans nom')}</h3>
+            <p class="text-xs text-slate-400 mt-1">${echapperHTML(item.school || 'CLG-LOUIS LUMIERE')}</p>
         `;
 
         if (item.motto) {
-          cardHTML += `<p class="mt-3 text-xs italic text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/50">« ${item.motto} »</p>`;
+          cardHTML += `<p class="profile-details mt-3 text-xs italic text-slate-300 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/50">« ${echapperHTML(item.motto)} »</p>`;
         }
 
         if (item.relations && item.relations.length > 0) {
@@ -541,9 +928,9 @@
               </span>
               <div class="space-y-1">
                 ${relationsToShow.map(rel => `
-                  <div class="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+                  <div class="profile-details text-xs text-slate-300 font-medium flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-                    ${rel}
+                    ${echapperHTML(rel)}
                   </div>
                 `).join('')}
               </div>
@@ -553,28 +940,62 @@
 
         cardHTML += `</div>`;
         card.innerHTML = cardHTML;
-        if (userRole === 'vip' || userRole === 'extra') {
+        const actionBar = document.createElement('div');
+        actionBar.className = 'mt-4 pt-3 border-t border-slate-800 flex flex-wrap gap-2';
+        const favoriteButton = document.createElement('button');
+        favoriteButton.type = 'button';
+        favoriteButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 text-amber-200 text-[11px] font-semibold';
+        const isFavorite = userFavorites.includes(getProfileKey(item));
+        favoriteButton.innerHTML = `<i class="fa-${isFavorite ? 'solid' : 'regular'} fa-star mr-1"></i>${isFavorite ? 'Favori' : 'Ajouter aux favoris'}`;
+        favoriteButton.addEventListener('click', () => basculerFavori(item));
+        actionBar.appendChild(favoriteButton);
+
+        if (estVip()) {
+          const hideButton = document.createElement('button');
+          hideButton.type = 'button';
+          hideButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] font-semibold';
+          hideButton.innerHTML = `<i class="fa-solid fa-eye-slash mr-1"></i>Masquer pour moi`;
+          hideButton.addEventListener('click', () => basculerMasquagePersonnel(item));
+          actionBar.appendChild(hideButton);
+        } else {
+          const hideButton = document.createElement('button');
+          hideButton.type = 'button';
+          hideButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-semibold';
+          hideButton.innerHTML = '<i class="fa-solid fa-eye-slash mr-1"></i>Masquer (VIP)';
+          hideButton.addEventListener('click', () => openVipModal());
+          actionBar.appendChild(hideButton);
+        }
+        const correctionButton = document.createElement('button');
+        correctionButton.type = 'button';
+        correctionButton.className = 'px-2.5 py-2 rounded-lg border border-sky-500/20 bg-sky-500/5 hover:bg-sky-500/10 text-sky-200 text-[11px] font-semibold';
+        correctionButton.innerHTML = '<i class="fa-solid fa-flag mr-1"></i>Signaler une erreur';
+        correctionButton.addEventListener('click', () => signalerCorrection(item));
+        actionBar.appendChild(correctionButton);
+        card.appendChild(actionBar);
+
+        if (estVip()) {
           const requestButton = document.createElement('button');
           requestButton.type = 'button';
-          requestButton.className = 'mt-4 w-full px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-200 text-xs font-semibold transition';
-          requestButton.innerHTML = '<i class="fa-solid fa-user-minus mr-1.5"></i> Demander le retrait de ce profil';
+          requestButton.className = 'mt-2 w-full px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-200 text-xs font-semibold transition';
+          requestButton.innerHTML = '<i class="fa-solid fa-user-minus mr-1.5"></i>Demander le retrait de ce profil';
           requestButton.addEventListener('click', () => ouvrirDemandeRetrait(item));
           card.appendChild(requestButton);
         }
         grid.appendChild(card);
 
+        // Les bannières de promotion ne sont affichées qu’en mode normal.
         if (userRole === 'normal' && (index + 1) % 3 === 0) {
           const adCard = document.createElement('div');
-          adCard.className = "glass-panel rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-yellow-500/10 flex flex-col justify-between relative overflow-hidden";
+          adCard.className = "glass-panel rounded-2xl p-5 border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-violet-500/10 flex flex-col justify-between relative overflow-hidden";
           adCard.innerHTML = `
-            <div class="absolute inset-0 vip-blur flex flex-col items-center justify-center p-4 bg-slate-950/40">
-              <span class="text-sm font-black text-amber-400 tracking-widest uppercase">VIP ONLY CONTENT</span>
+            <div class="flex items-center gap-2 text-amber-300 text-[10px] uppercase font-extrabold tracking-widest"><i class="fa-solid fa-crown"></i> Option VIP</div>
+            <div class="text-center py-4">
+              <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center text-xl"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+              <h4 class="font-extrabold text-white text-base">Ton annuaire, à ta façon</h4>
+              <p class="text-xs text-slate-300 mt-2">Sans bannières promo, favoris, profils masqués pour toi et recherches enregistrées.</p>
+              <button type="button" onclick="openVipModal()" class="mt-4 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition"><i class="fa-solid fa-crown mr-1"></i>Découvrir le VIP</button>
             </div>
-            <div class="relative z-10 text-center py-4">
-              <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center"><i class="fa-solid fa-crown"></i></div>
-              <h4 class="font-bold text-white text-sm">Passez au VIP !</h4>
-              <button onclick="openVipModal()" class="mt-4 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg transition">Devenir VIP</button>
-            </div>
+            <p class="text-[10px] text-slate-500 text-center">Les profils retirés ou masqués par l’administration restent indisponibles.</p>
           `;
           grid.appendChild(adCard);
         }
@@ -603,6 +1024,7 @@
         userRole = customCodes[code];
         localStorage.setItem('userRole', userRole);
         closeVipModal();
+        ajouterActivite('Grade activé', `Mode ${userRole === 'extra' ? 'VIP Extra' : 'VIP'} activé sur cet appareil.`);
         updateInterfaceRole();
       } else {
         alert("Code VIP invalide.");
@@ -770,6 +1192,7 @@
 
       renderAdminVisibilityList();
       renderAdminRemovalRequests();
+      renderAdminCorrectionRequests();
     }
 
     async function renderAdminRemovalRequests() {
@@ -1180,11 +1603,18 @@
       const searchInput = document.getElementById('search-input');
       const clearSearch = document.getElementById('clear-search');
 
+      actualiserControleVIP();
+      document.body.classList.toggle('compact-mode', compactMode && estVip());
+      document.body.dataset.vipTheme = currentTheme;
+      actualiserListeRecherches();
+
       searchInput.addEventListener('input', () => {
         clearSearch.classList.toggle('hidden', searchInput.value.length === 0);
         currentPage = 1;
         renderCards();
       });
+      searchInput.addEventListener('change', enregistrerHistoriqueRecherche);
+      searchInput.addEventListener('keydown', event => { if (event.key === 'Enter') enregistrerHistoriqueRecherche(); });
 
       clearSearch.addEventListener('click', () => {
         searchInput.value = '';
@@ -1197,6 +1627,10 @@
       document.getElementById('filter-class').addEventListener('change', () => { currentPage = 1; renderCards(); });
       document.getElementById('sort-order').addEventListener('change', () => { currentPage = 1; renderCards(); });
       document.getElementById('admin-search-profile').addEventListener('input', renderAdminVisibilityList);
+      document.getElementById('saved-search-select').addEventListener('change', e => { if (e.target.value !== '') appliquerRechercheEnregistree(e.target.value); });
+      document.getElementById('search-history-select').addEventListener('change', e => { if (e.target.value !== '') appliquerRechercheHistorique(e.target.value); });
+      document.getElementById('theme-select').addEventListener('change', e => changerTheme(e.target.value));
+      document.getElementById('cosmetic-badge-select').addEventListener('change', e => changerBadgeDecoratif(e.target.value));
 
       const dropZone = document.getElementById('drop-zone');
       const fileInput = document.getElementById('file-input');
