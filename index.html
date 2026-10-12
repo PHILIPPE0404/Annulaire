@@ -81,6 +81,15 @@
     .offer-gradient { background: linear-gradient(115deg, #f59e0b, #facc15 50%, #fb923c); }
     .mini-label { display:inline-flex; align-items:center; gap:.35rem; border:1px solid rgba(255,255,255,.1); background:rgba(15,23,42,.65); border-radius:999px; padding:.35rem .6rem; font-size:.67rem; color:#cbd5e1; }
     .admin-request-card { border:1px solid rgba(148,163,184,.15); background:rgba(2,6,23,.6); border-radius:1rem; padding:1rem; }
+    .profile-card-locked { position: relative !important; overflow: hidden !important; isolation: isolate; }
+    .profile-card-locked > :not(.profile-lock-overlay) { filter: blur(3px); pointer-events: none !important; user-select: none !important; }
+    .profile-lock-overlay { position: absolute; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 1.25rem; background: linear-gradient(135deg, rgba(2,6,23,.78), rgba(30,41,59,.78)); backdrop-filter: blur(3px); text-align: center; }
+    .profile-parent-link { display: inline-flex; max-width: 100%; align-items: center; gap: .4rem; text-align: left; border-radius: .4rem; padding: .15rem .25rem; color: #cbd5e1; }
+    .profile-parent-link:hover { color: #f8fafc; background: rgba(56,189,248,.08); }
+    .profile-parent-link span.parent-link-name { overflow-wrap: anywhere; }
+    .parent-profile-content { position: relative; }
+    .parent-profile-content.locked > .parent-profile-details { filter: blur(4px); user-select: none; pointer-events:none; }
+    .parent-profile-lock { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:1.5rem; background:rgba(2,6,23,.60); backdrop-filter:blur(3px); border-radius:1.25rem; text-align:center; }
     @media (prefers-reduced-motion: reduce) { .offer-card { transition:none; } .offer-card:hover { transform:none; } }
   </style>
 </head>
@@ -114,7 +123,7 @@
         Annuaire Scolaire
       </h1>
       <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
-        Élèves, Enseignants, Personnel & Parents d'élèves.
+        Élèves, enseignants et personnel. Les fiches des parents s’ouvrent depuis les relations autorisées.
       </p>
 
       <!-- Stats -->
@@ -124,8 +133,7 @@
         <div class="flex items-center gap-2"><i class="fa-solid fa-chalkboard-user text-indigo-400"></i><span>Profs : <strong id="stat-teachers" class="text-white font-bold">0</strong></span></div>
         <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
         <div class="flex items-center gap-2"><i class="fa-solid fa-user-gear text-amber-400"></i><span>Personnel : <strong id="stat-staff" class="text-white font-bold">0</strong></span></div>
-        <div class="h-3 w-px bg-slate-800 hidden sm:block"></div>
-        <div class="flex items-center gap-2"><i class="fa-solid fa-people-roof text-emerald-400"></i><span>Parents : <strong id="stat-parents" class="text-white font-bold">0</strong></span></div>
+
       </div>
     </header>
 
@@ -161,7 +169,6 @@
         <select id="filter-role" class="px-3 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-300 outline-none cursor-pointer">
           <option value="ALL">Tous les rôles</option>
           <option value="Élève">Élèves</option>
-          <option value="Parent">Parents</option>
           <option value="Enseignant">Enseignants / Profs</option>
           <option value="Personnel">Personnel</option>
         </select>
@@ -295,6 +302,18 @@
         <button id="send-removal-request-btn" type="button" onclick="envoyerDemandeRetrait()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"><i class="fa-solid fa-paper-plane mr-1"></i> Envoyer la demande</button>
       </div>
       <p id="removal-request-status" role="status" aria-live="polite" class="text-xs text-slate-400 mt-3"></p>
+    </div>
+  </div>
+
+  <!-- MODALE : fiche parent accessible depuis une relation, avec verrou VIP/Extra selon les réglages -->
+  <div id="parent-profile-modal" class="fixed inset-0 bg-slate-950/90 z-[70] hidden items-center justify-center p-4 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="parent-profile-modal-title">
+    <div class="premium-card rounded-3xl max-w-xl w-full p-5 sm:p-7 shadow-2xl relative border border-sky-500/20 my-6">
+      <button type="button" onclick="fermerFicheParent()" class="absolute top-3 right-3 p-2 text-slate-400 hover:text-white" aria-label="Fermer la fiche parent"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-12 h-12 rounded-2xl bg-sky-500/15 text-sky-200 flex items-center justify-center text-xl"><i class="fa-solid fa-people-roof"></i></div>
+        <div><p class="text-[10px] uppercase font-extrabold tracking-[.2em] text-sky-300">Fiche parent</p><h3 id="parent-profile-modal-title" class="text-xl font-extrabold text-white">Informations du parent</h3></div>
+      </div>
+      <div id="parent-profile-modal-content"></div>
     </div>
   </div>
 
@@ -513,6 +532,68 @@
       return 'none';
     }
 
+    // Les réglages Normal / VIP / Extra affichent maintenant un aperçu verrouillé
+    // au lieu de faire disparaître entièrement le profil. Le choix "all" reste retiré.
+    function getProfileLockInfo(item) {
+      const level = getProfileVisibility(item);
+      if (level === 'normal' && userRole === 'normal') {
+        return { badge: 'VIP', title: 'Profil réservé au VIP', message: 'Débloque les favoris VIP et consulte les profils autorisés.', action: 'Découvrir le VIP', tone: 'amber' };
+      }
+      if (level === 'vip' && !['vipExtra', 'extra'].includes(userRole)) {
+        return { badge: 'VIP EXTRA', title: 'Accès VIP Extra requis', message: 'Ce profil est réservé au grade VIP Extra.', action: 'Voir les offres', tone: 'violet' };
+      }
+      if (level === 'extra' && userRole !== 'extra') {
+        return { badge: 'EXTRA', title: 'Accès Extra réservé', message: 'Ce profil est verrouillé pour les visiteurs et les membres VIP.', action: 'Voir les offres', tone: 'violet' };
+      }
+      return null;
+    }
+
+    function trouverFicheParent(nom) {
+      const cible = normaliserRecherche(nom);
+      return rawData.find(item => item.role === 'Parent' && normaliserRecherche(item.displayName) === cible) || null;
+    }
+
+    function fermerFicheParent() {
+      const modal = document.getElementById('parent-profile-modal');
+      if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    }
+
+    function ouvrirFicheParent(nom) {
+      const modal = document.getElementById('parent-profile-modal');
+      const content = document.getElementById('parent-profile-modal-content');
+      const title = document.getElementById('parent-profile-modal-title');
+      const parent = trouverFicheParent(nom);
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      if (!parent) {
+        title.textContent = 'Fiche parent indisponible';
+        content.innerHTML = `<div class="rounded-2xl border border-slate-700 bg-slate-950/70 p-4"><p class="text-sm font-semibold text-white">Cette fiche parent n’est pas présente dans les données chargées.</p><p class="text-xs text-slate-400 mt-2">Le nom est indiqué dans la relation, mais aucune fiche correspondante n’a été trouvée.</p><button type="button" onclick="fermerFicheParent()" class="mt-4 px-4 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold">Fermer</button></div>`;
+        return;
+      }
+
+      const level = getProfileVisibility(parent);
+      if (level === 'all' && userRole !== 'extra') {
+        title.textContent = 'Fiche non disponible';
+        content.innerHTML = `<div class="rounded-2xl border border-rose-500/25 bg-rose-500/5 p-5 text-center"><i class="fa-solid fa-lock text-2xl text-rose-300"></i><h4 class="text-base font-extrabold text-white mt-3">Ce profil a été retiré</h4><p class="text-xs text-slate-400 mt-2">L’administration a rendu cette fiche indisponible.</p><button type="button" onclick="fermerFicheParent()" class="mt-4 px-4 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold">Fermer</button></div>`;
+        return;
+      }
+
+      title.textContent = parent.displayName || 'Fiche parent';
+      const lockInfo = getProfileLockInfo(parent);
+      const relations = Array.isArray(parent.relations) ? parent.relations : [];
+      const detailsHTML = `
+        <div class="parent-profile-details space-y-3">
+          <div class="flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${getGradient(parent.displayName || 'Parent')} flex items-center justify-center text-white font-extrabold shrink-0">${echapperHTML(getInitials(parent.displayName || 'Parent'))}</div>
+            <div class="min-w-0"><div class="font-extrabold text-white text-lg break-words">${echapperHTML(parent.displayName || 'Parent')}</div><div class="text-xs text-sky-200 mt-1">Parent d’élève</div><div class="text-xs text-slate-400 mt-1">${echapperHTML(parent.school || 'CLG-LOUIS LUMIERE')}</div></div>
+          </div>
+          ${parent.motto ? `<p class="text-xs italic text-slate-300 border border-slate-800 bg-slate-950/60 rounded-xl p-3">« ${echapperHTML(parent.motto)} »</p>` : ''}
+          ${relations.length ? `<div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4"><p class="text-[10px] uppercase tracking-widest font-extrabold text-slate-500 mb-2"><i class="fa-solid fa-user-graduate mr-1"></i> Enfant(s) rattaché(s)</p><div class="space-y-1">${relations.map(rel => `<div class="text-sm text-slate-300 break-words">${echapperHTML(rel)}</div>`).join('')}</div></div>` : ''}
+        </div>`;
+
+      content.innerHTML = `<div class="parent-profile-content ${lockInfo ? 'locked' : ''}">${detailsHTML}${lockInfo ? `<div class="parent-profile-lock"><div class="max-w-xs"><span class="inline-flex px-3 py-1 rounded-full ${lockInfo.tone === 'amber' ? 'bg-amber-400/15 text-amber-200 border-amber-400/30' : 'bg-violet-400/15 text-violet-200 border-violet-400/30'} border text-[10px] font-black tracking-widest">${echapperHTML(lockInfo.badge)}</span><h4 class="text-lg font-extrabold text-white mt-3">${echapperHTML(lockInfo.title)}</h4><p class="text-xs text-slate-300 mt-2">${echapperHTML(lockInfo.message)}</p>${userRole === 'normal' || userRole === 'vip' ? `<button type="button" onclick="fermerFicheParent(); openVipModal()" class="mt-4 px-4 py-2.5 rounded-xl offer-gradient text-slate-950 font-extrabold text-xs"><i class="fa-solid fa-crown mr-1"></i>${echapperHTML(lockInfo.action)}</button>` : ''}</div></div>` : ''}</div><div class="flex justify-end mt-4"><button type="button" onclick="fermerFicheParent()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold">Fermer</button></div>`;
+    }
 
     function echapperHTML(value) {
       return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
@@ -739,7 +820,6 @@
       document.getElementById('stat-students').textContent = students;
       document.getElementById('stat-teachers').textContent = teachers;
       document.getElementById('stat-staff').textContent = staff;
-      document.getElementById('stat-parents').textContent = parents;
 
       const classSelect = document.getElementById('filter-class');
       classSelect.innerHTML = '<option value="ALL">Toutes les classes</option>';
@@ -766,10 +846,11 @@
 
       let filtered = rawData.filter(item => {
         const hideLevel = getProfileVisibility(item);
-        // Respecte les choix admin : VIP voit les profils ouverts aux VIP, jamais ceux masqués pour tous ou pour VIP.
+        // Les fiches Parent ne sont jamais affichées comme cartes de premier niveau.
+        // Elles restent accessibles en cliquant sur le nom du parent dans une relation.
+        if (item.role === 'Parent') return false;
+        // Un profil retiré reste absent ; les autres restrictions affichent un aperçu verrouillé.
         if (hideLevel === 'all') return false;
-        if (userRole === 'normal' && (hideLevel === 'normal' || hideLevel === 'vip')) return false;
-        if (userRole === 'vip' && hideLevel === 'vip') return false;
         if (showFavoritesOnly && !userFavorites.includes(getProfileKey(item))) return false;
 
         const searchableText = normaliserRecherche([item.displayName, item.class, item.role, item.school, item.motto, ...(Array.isArray(item.relations) ? item.relations : [])].join(' '));
@@ -835,10 +916,11 @@
               </span>
               <div class="space-y-1">
                 ${relationsToShow.map(rel => `
-                  <div class="profile-details text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>
-                    ${echapperHTML(rel)}
-                  </div>
+                  <button type="button" data-parent-name="${echapperHTML(rel)}" title="Ouvrir la fiche parent" class="profile-details profile-parent-link text-xs font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block shrink-0"></span>
+                    <span class="parent-link-name">${echapperHTML(rel)}</span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-[9px] opacity-60 shrink-0"></i>
+                  </button>
                 `).join('')}
               </div>
             </div>
@@ -847,6 +929,9 @@
 
         cardHTML += `</div>`;
         card.innerHTML = cardHTML;
+        card.querySelectorAll('[data-parent-name]').forEach(button => {
+          button.addEventListener('click', () => ouvrirFicheParent(button.getAttribute('data-parent-name') || ''));
+        });
         const actionBar = document.createElement('div');
         actionBar.className = 'mt-4 pt-3 border-t border-slate-800 flex flex-wrap gap-2';
         // Aucun bouton Favoris n'est affiché aux visiteurs en mode normal.
@@ -875,6 +960,23 @@
           requestButton.innerHTML = '<i class="fa-solid fa-user-minus mr-1.5"></i>Demander le retrait de ce profil';
           requestButton.addEventListener('click', () => ouvrirDemandeRetrait(item));
           card.appendChild(requestButton);
+        }
+
+        const lockInfo = getProfileLockInfo(item);
+        if (lockInfo) {
+          card.classList.add('profile-card-locked', 'relative', 'overflow-hidden');
+          const overlay = document.createElement('div');
+          overlay.className = 'profile-lock-overlay rounded-2xl';
+          overlay.innerHTML = `
+            <div class="max-w-xs">
+              <span class="inline-flex px-3 py-1 rounded-full ${lockInfo.tone === 'amber' ? 'bg-amber-400/15 text-amber-200 border-amber-400/30' : 'bg-violet-400/15 text-violet-200 border-violet-400/30'} border text-[10px] font-black tracking-widest"><i class="fa-solid fa-lock mr-1"></i>${echapperHTML(lockInfo.badge)}</span>
+              <h4 class="text-base font-extrabold text-white mt-3">${echapperHTML(lockInfo.title)}</h4>
+              <p class="text-xs text-slate-300 mt-2">${echapperHTML(lockInfo.message)}</p>
+              ${(userRole === 'normal' || userRole === 'vip') ? `<button type="button" class="mt-4 px-4 py-2 rounded-xl offer-gradient text-slate-950 font-extrabold text-xs"><i class="fa-solid fa-crown mr-1"></i>${echapperHTML(lockInfo.action)}</button>` : ''}
+            </div>`;
+          const promoButton = overlay.querySelector('button');
+          if (promoButton) promoButton.addEventListener('click', event => { event.stopPropagation(); openVipModal(); });
+          card.appendChild(overlay);
         }
         grid.appendChild(card);
 
@@ -1637,9 +1739,10 @@
         select.className = 'bg-slate-800 text-slate-300 rounded px-2 py-1.5 text-[11px] outline-none border border-slate-700';
         select.setAttribute('aria-label', `Visibilité de ${item.displayName || 'ce profil'}`);
         [
-          ['none', 'Visible pour tous'],
-          ['normal', 'Masqué en Mode Normal'],
-          ['vip', 'Masqué Normal & VIP'],
+          ['none', 'Visible en entier pour tous'],
+          ['normal', 'Verrou VIP : aperçu en mode Normal'],
+          ['vip', 'Verrou VIP Extra : aperçu en Normal et VIP'],
+          ['extra', 'Verrou Extra : aperçu sauf pour Admin Extra'],
           ['all', 'Retiré de l’annuaire (masqué pour tous)']
         ].forEach(([value, text]) => {
           const option = document.createElement('option');
