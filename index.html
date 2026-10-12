@@ -81,15 +81,68 @@
     .offer-gradient { background: linear-gradient(115deg, #f59e0b, #facc15 50%, #fb923c); }
     .mini-label { display:inline-flex; align-items:center; gap:.35rem; border:1px solid rgba(255,255,255,.1); background:rgba(15,23,42,.65); border-radius:999px; padding:.35rem .6rem; font-size:.67rem; color:#cbd5e1; }
     .admin-request-card { border:1px solid rgba(148,163,184,.15); background:rgba(2,6,23,.6); border-radius:1rem; padding:1rem; }
-    .profile-card-locked { position: relative !important; overflow: hidden !important; isolation: isolate; }
-    .profile-card-locked > :not(.profile-lock-overlay) { filter: blur(3px); pointer-events: none !important; user-select: none !important; }
-    .profile-lock-overlay { position: absolute; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 1.25rem; background: linear-gradient(135deg, rgba(2,6,23,.78), rgba(30,41,59,.78)); backdrop-filter: blur(3px); text-align: center; }
+    /* Cartes verrouillées : contenu flou + voile violet premium */
+    .profile-card-locked {
+      position: relative !important;
+      overflow: hidden !important;
+      isolation: isolate;
+      border-color: rgba(167, 139, 250, .58) !important;
+      box-shadow: 0 0 0 1px rgba(124, 58, 237, .12), 0 12px 36px rgba(91, 33, 182, .12);
+    }
+    .profile-card-locked > :not(.profile-lock-overlay) {
+      filter: blur(6px) saturate(.82) brightness(.72);
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+    .profile-lock-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.25rem;
+      background: linear-gradient(135deg, rgba(46, 16, 101, .54), rgba(91, 33, 182, .43) 48%, rgba(30, 27, 75, .62));
+      -webkit-backdrop-filter: blur(7px) saturate(1.2);
+      backdrop-filter: blur(7px) saturate(1.2);
+      border: 1px solid rgba(196, 181, 253, .34);
+      box-shadow: inset 0 0 42px rgba(139, 92, 246, .16);
+      text-align: center;
+    }
+    .profile-lock-overlay > div {
+      padding: 1rem 1.15rem;
+      border: 1px solid rgba(196, 181, 253, .24);
+      border-radius: 1rem;
+      background: rgba(30, 16, 60, .52);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, .24), 0 0 30px rgba(139, 92, 246, .12);
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
     .profile-parent-link { display: inline-flex; max-width: 100%; align-items: center; gap: .4rem; text-align: left; border-radius: .4rem; padding: .15rem .25rem; color: #cbd5e1; }
-    .profile-parent-link:hover { color: #f8fafc; background: rgba(56,189,248,.08); }
+    .profile-parent-link:hover { color: #f8fafc; background: rgba(139, 92, 246, .15); }
     .profile-parent-link span.parent-link-name { overflow-wrap: anywhere; }
     .parent-profile-content { position: relative; }
-    .parent-profile-content.locked > .parent-profile-details { filter: blur(4px); user-select: none; pointer-events:none; }
-    .parent-profile-lock { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:1.5rem; background:rgba(2,6,23,.60); backdrop-filter:blur(3px); border-radius:1.25rem; text-align:center; }
+    .parent-profile-content.locked > .parent-profile-details {
+      filter: blur(6px) saturate(.82) brightness(.72);
+      user-select: none;
+      pointer-events: none;
+    }
+    .parent-profile-lock {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background: linear-gradient(135deg, rgba(46, 16, 101, .56), rgba(109, 40, 217, .43), rgba(30, 27, 75, .64));
+      -webkit-backdrop-filter: blur(7px) saturate(1.2);
+      backdrop-filter: blur(7px) saturate(1.2);
+      border: 1px solid rgba(196, 181, 253, .34);
+      border-radius: 1.25rem;
+      box-shadow: inset 0 0 38px rgba(139, 92, 246, .16);
+      text-align: center;
+    }
+    .profile-lock-overlay .bg-amber-400\/15 { box-shadow: 0 0 18px rgba(139, 92, 246, .16); }
     @media (prefers-reduced-motion: reduce) { .offer-card { transition:none; } .offer-card:hover { transform:none; } }
   </style>
 </head>
