@@ -39,6 +39,17 @@
     .profile-card { min-width: 0; }
     .compact-mode .profile-card { padding: .8rem !important; }
     .compact-mode .profile-card .profile-details { display: none; }
+    /* Vue liste VIP : une ligne par profil, avec les actions à droite. */
+    #cards-grid.list-view { display: flex !important; flex-direction: column; gap: .75rem !important; }
+    #cards-grid.list-view > .profile-card { display: flex !important; flex-direction: row !important; align-items: center; gap: 1rem; padding: .9rem 1.1rem !important; }
+    #cards-grid.list-view > .profile-card > div:first-child { flex: 1; min-width: 0; }
+    #cards-grid.list-view > .profile-card > div:first-child > div:first-child { margin-bottom: .45rem !important; }
+    #cards-grid.list-view > .profile-card > .mt-4 { align-self: center; margin-top: 0 !important; padding-top: 0 !important; border-top: 0 !important; }
+    #cards-grid.list-view > .profile-card .profile-details { overflow-wrap: anywhere; }
+    @media (max-width: 640px) {
+      #cards-grid.list-view > .profile-card { align-items: stretch; flex-direction: column !important; gap: .75rem; }
+      #cards-grid.list-view > .profile-card > .mt-4 { align-self: stretch; }
+    }
     body[data-vip-theme="violet"] { --theme-accent: #a78bfa; }
     body[data-vip-theme="emerald"] { --theme-accent: #34d399; }
     body[data-vip-theme="blue"] { --theme-accent: #38bdf8; }
@@ -65,7 +76,6 @@
         <div id="user-badge-status" class="px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300 border border-slate-700 flex items-center gap-1.5">
           <i class="fa-solid fa-user"></i> Mode Normal
         </div>
-        <span id="user-cosmetic-badge" class="hidden px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/15 text-sky-200 border border-sky-500/20"></span>
         <button id="logout-btn" onclick="deconnecter()" class="hidden text-xs text-red-400 hover:text-red-300 underline font-medium">Déconnexion</button>
         <span class="text-xs text-slate-400 hidden sm:inline">Collège Louis Lumière</span>
       </div>
@@ -107,15 +117,13 @@
         <div class="flex-1">
           <div class="flex items-center gap-2 mb-3"><span class="px-3 py-1 rounded-full bg-amber-400/15 text-amber-200 text-[10px] font-extrabold uppercase tracking-widest"><i class="fa-solid fa-crown mr-1"></i> Pass VIP</span><span class="mini-label">Options bonus</span></div>
           <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Un annuaire plus pratique, à ton rythme.</h2>
-          <p class="text-sm text-slate-300 mt-2 max-w-3xl">Passe en VIP pour garder tes profils préférés, masquer des fiches uniquement pour toi et personnaliser l’affichage. Le VIP Extra ajoute des options de personnalisation.</p>
+          <p class="text-sm text-slate-300 mt-2 max-w-3xl">Passe en VIP pour supprimer les promotions intégrées et garder tes profils préférés dans une liste personnelle. VIP Extra ajoute l’accès aux profils que l’administration réserve à ce grade.</p>
           <div class="flex flex-wrap gap-2 mt-4">
             <span class="vip-benefit"><i class="fa-solid fa-ban text-amber-300"></i> Sans promotions intégrées</span>
             <span class="vip-benefit"><i class="fa-solid fa-star text-amber-300"></i> Favoris privés</span>
-            <span class="vip-benefit"><i class="fa-solid fa-eye-slash text-amber-300"></i> Masquer pour soi</span>
-            <span class="vip-benefit"><i class="fa-solid fa-palette text-amber-300"></i> Thèmes et badges</span>
-            <span class="vip-benefit"><i class="fa-solid fa-grip text-amber-300"></i> Vue compacte</span>
+            <span class="vip-benefit"><i class="fa-solid fa-cloud text-amber-300"></i> Codes synchronisés avec Firebase</span>
           </div>
-          <p class="text-[11px] text-slate-400 mt-3">Prix proposés : Gratuit 0 € · VIP 2 € · VIP Extra 10 €. Les demandes payantes sont examinées manuellement : aucun prélèvement n’est effectué sur ce site.</p>
+          <p class="text-[11px] text-slate-400 mt-3">Prix proposés : Gratuit 0 € · VIP 2 € · VIP Extra 7 €. Les demandes payantes sont examinées manuellement : aucun prélèvement n’est effectué sur ce site.</p>
         </div>
         <button type="button" onclick="openVipModal()" class="shrink-0 px-6 py-3.5 rounded-2xl offer-gradient hover:brightness-110 text-slate-950 text-sm font-extrabold shadow-xl transition"><i class="fa-solid fa-crown mr-2"></i>Découvrir les offres</button>
       </div>
@@ -149,24 +157,17 @@
       </div>
     </div>
 
-    <!-- Outils réservés aux VIP : les favoris sont le seul outil de sauvegarde de recherche -->
-    <section id="vip-tools-section" class="hidden glass-panel rounded-2xl p-4 sm:p-5 mb-6 space-y-4 premium-card">
-      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+    <!-- Espace VIP : uniquement les favoris -->
+    <section id="vip-tools-section" class="hidden glass-panel rounded-2xl p-4 sm:p-5 mb-6 premium-card">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-sparkles text-amber-300 mr-2"></i>Mon espace VIP</h2>
-          <p class="text-[11px] text-slate-400 mt-1">Retrouve tes favoris et personnalise l’affichage. Aucune recherche n’est enregistrée.</p>
+          <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-sliders text-sky-300 mr-2"></i>Outils VIP de l’annuaire</h2>
+          <p class="text-[11px] text-slate-400 mt-1">Accède à tes favoris ou passe à la vue liste pour parcourir les profils autrement.</p>
         </div>
-        <div class="flex flex-wrap gap-2">
-          <button id="show-favorites-btn" type="button" onclick="basculerFavoris()" class="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-100 text-xs font-semibold hover:bg-amber-500/20"><i class="fa-solid fa-star mr-1 text-amber-300"></i>Mes favoris <span id="favorites-count" class="ml-1 text-amber-200">0</span></button>
-          <button id="manage-hidden-btn" type="button" onclick="ouvrirGestionProfilsMasques()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-rose-400"><i class="fa-solid fa-eye-slash mr-1"></i>Profils masqués</button>
-          <button id="compact-toggle-btn" type="button" onclick="basculerModeCompact()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-grip mr-1"></i>Vue compacte</button>
-          <button type="button" onclick="ouvrirCentreActivite()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 text-xs font-semibold hover:border-brand-400"><i class="fa-solid fa-bell mr-1"></i>Activité <span id="activity-count" class="ml-1 text-slate-400">0</span></button>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="show-favorites-btn" type="button" onclick="basculerFavoris()" class="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-100 text-xs font-semibold hover:bg-amber-500/20 transition"><i class="fa-solid fa-star mr-1 text-amber-300"></i><span id="favorites-button-label">Afficher mes favoris</span> <span id="favorites-count" class="ml-1 text-amber-200">0</span></button>
+          <button id="toggle-list-view-btn" type="button" onclick="basculerVueListe()" aria-pressed="false" class="px-4 py-2.5 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-100 text-xs font-semibold hover:bg-sky-500/20 transition"><i class="fa-solid fa-list mr-1"></i>Vue liste</button>
         </div>
-      </div>
-      <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800/70">
-        <div class="flex items-center gap-2"><label for="theme-select" class="text-[10px] uppercase tracking-wider text-slate-400">Thème</label><select id="theme-select" aria-label="Thème de l’annuaire" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="blue">Bleu</option><option value="violet">Violet</option><option value="emerald">Émeraude</option></select></div>
-        <div class="flex items-center gap-2"><label for="cosmetic-badge-select" class="text-[10px] uppercase tracking-wider text-slate-400">Badge décoratif</label><select id="cosmetic-badge-select" class="px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200"><option value="none">Aucun</option><option value="collector">Collectionneur ⭐</option><option value="explorer">Explorateur 🧭</option><option value="organise">Bien organisé ✨</option></select></div>
-        <span class="text-[10px] text-slate-500">Les préférences sont actuellement conservées sur cet appareil.</span>
       </div>
     </section>
 
@@ -206,7 +207,7 @@
           <h4 class="text-lg font-extrabold text-white mt-4">Normal</h4>
           <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">0 €</span><span class="text-xs text-slate-500">gratuit</span></div>
           <p class="text-xs text-slate-400 mt-2">Pour utiliser les fonctions essentielles de l’annuaire.</p>
-          <ul class="mt-5 space-y-3 text-xs text-slate-300 flex-1"><li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Recherche et filtres de base</li><li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Consultation des profils autorisés</li><li><i class="fa-solid fa-minus text-slate-500 mr-2"></i>Pas de favoris personnels</li><li><i class="fa-solid fa-minus text-slate-500 mr-2"></i>Bannières de présentation VIP</li></ul>
+          <ul class="mt-5 space-y-3 text-xs text-slate-300 flex-1"><li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Recherche et filtres de base</li><li><i class="fa-solid fa-check text-emerald-400 mr-2"></i>Consultation des profils autorisés</li><li><i class="fa-solid fa-minus text-slate-500 mr-2"></i>Favoris réservés au VIP et VIP Extra</li><li><i class="fa-solid fa-minus text-slate-500 mr-2"></i>Bannières de présentation VIP</li></ul>
           <button type="button" onclick="choisirOffreGratuite()" class="mt-6 w-full px-4 py-3 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold">Choisir Gratuit</button>
         </article>
         <article class="offer-card popular rounded-2xl p-5 flex flex-col md:-translate-y-2">
@@ -214,17 +215,17 @@
           <span class="mini-label self-start mt-2 border-amber-400/30 text-amber-200">Pour le quotidien</span>
           <h4 class="text-lg font-extrabold text-amber-100 mt-4"><i class="fa-solid fa-crown mr-2 text-amber-300"></i>VIP</h4>
           <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">2 €</span><span class="text-xs text-slate-500">prix proposé</span></div>
-          <p class="text-xs text-slate-400 mt-2">Plus de confort et une liste personnelle.</p>
-          <ul class="mt-5 space-y-3 text-xs text-slate-200 flex-1"><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Sans bannières promotionnelles intégrées</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Favoris et filtre « Mes favoris »</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Masquer des profils pour soi</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Thèmes et vue compacte</li></ul>
+          <p class="text-xs text-slate-400 mt-2">Garde tes profils préférés dans une liste personnelle et utilise l’annuaire sans promotions intégrées.</p>
+          <ul class="mt-5 space-y-3 text-xs text-slate-200 flex-1"><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Sans bannières promotionnelles intégrées</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Favoris personnels et filtre « Mes favoris »</li><li><i class="fa-solid fa-check text-amber-300 mr-2"></i>Demande de retrait de profil examinée par l’administration</li></ul>
           <button type="button" onclick="demanderOffre('vip', 2)" class="mt-6 w-full px-4 py-3 rounded-xl offer-gradient hover:brightness-110 text-slate-950 text-xs font-extrabold shadow-lg"><i class="fa-solid fa-paper-plane mr-2"></i>Demander VIP — 2 €</button>
         </article>
         <article class="offer-card rounded-2xl p-5 flex flex-col border-violet-400/30">
           <span class="mini-label self-start border-violet-400/30 text-violet-200">Personnalisation avancée</span>
           <h4 class="text-lg font-extrabold text-violet-100 mt-4"><i class="fa-solid fa-gem mr-2 text-violet-300"></i>VIP Extra</h4>
-          <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">10 €</span><span class="text-xs text-slate-500">prix proposé</span></div>
-          <p class="text-xs text-slate-400 mt-2">Toutes les options VIP, avec des extras décoratifs.</p>
-          <ul class="mt-5 space-y-3 text-xs text-slate-200 flex-1"><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Tous les avantages VIP</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Badges décoratifs supplémentaires</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Options avancées de personnalisation</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Profils autorisés au grade VIP Extra</li></ul>
-          <button type="button" onclick="demanderOffre('vipExtra', 10)" class="mt-6 w-full px-4 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-extrabold shadow-lg"><i class="fa-solid fa-gem mr-2"></i>Demander VIP Extra — 10 €</button>
+          <div class="mt-3 flex items-baseline gap-1"><span class="text-4xl font-black text-white">7 €</span><span class="text-xs text-slate-500">prix proposé</span></div>
+          <p class="text-xs text-slate-400 mt-2">Tous les avantages VIP, avec un niveau d’accès supplémentaire défini par l’administration.</p>
+          <ul class="mt-5 space-y-3 text-xs text-slate-200 flex-1"><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Tous les avantages VIP</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Accès aux profils réservés au grade VIP Extra</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Badge de grade VIP Extra</li><li><i class="fa-solid fa-check text-violet-300 mr-2"></i>Profils autorisés au grade VIP Extra</li></ul>
+          <button type="button" onclick="demanderOffre('vipExtra', 7)" class="mt-6 w-full px-4 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-extrabold shadow-lg"><i class="fa-solid fa-gem mr-2"></i>Demander VIP Extra — 7 €</button>
         </article>
       </div>
       <div class="mt-5 rounded-xl border border-slate-800 bg-slate-950/80 p-3 text-[11px] text-slate-400"><i class="fa-solid fa-circle-info text-sky-300 mr-2"></i>Les tarifs sont des prix proposés, sans périodicité définie. En cliquant sur une offre payante, tu envoies seulement une demande à l’administrateur ; tu devras convenir du reste avec lui.</div>
@@ -276,23 +277,6 @@
         <button id="send-removal-request-btn" type="button" onclick="envoyerDemandeRetrait()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"><i class="fa-solid fa-paper-plane mr-1"></i> Envoyer la demande</button>
       </div>
       <p id="removal-request-status" role="status" aria-live="polite" class="text-xs text-slate-400 mt-3"></p>
-    </div>
-  </div>
-
-  <!-- MODALE : profils masqués uniquement pour l'utilisateur -->
-  <div id="hidden-profiles-modal" class="fixed inset-0 bg-slate-950/85 z-[70] hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl">
-      <div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="text-lg font-bold text-white">Profils masqués pour moi</h3><p class="text-xs text-slate-400 mt-1">Cela ne masque pas le profil aux autres visiteurs.</p></div><button type="button" onclick="fermerGestionProfilsMasques()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-200"><i class="fa-solid fa-xmark"></i></button></div>
-      <div id="hidden-profiles-list" class="space-y-2 max-h-[55vh] overflow-y-auto"></div>
-    </div>
-  </div>
-
-  <!-- MODALE : centre d'activité local -->
-  <div id="activity-modal" class="fixed inset-0 bg-slate-950/85 z-[70] hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl">
-      <div class="flex items-center justify-between gap-3 mb-4"><div><h3 class="text-lg font-bold text-white"><i class="fa-solid fa-bell text-brand-400 mr-2"></i>Centre d’activité</h3><p class="text-xs text-slate-400 mt-1">Historique des actions sur cet appareil.</p></div><button type="button" onclick="fermerCentreActivite()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-200"><i class="fa-solid fa-xmark"></i></button></div>
-      <div id="activity-list" class="space-y-2 max-h-[55vh] overflow-y-auto"></div>
-      <div class="flex justify-end mt-4"><button type="button" onclick="effacerCentreActivite()" class="px-3 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold">Effacer l’historique</button></div>
     </div>
   </div>
 
@@ -482,13 +466,10 @@
     let vipRequests = lireJSONStockage('vipRequests', []);
     let removalRequestsLocal = lireJSONStockage('removalRequests', []);
     let userFavorites = lireJSONStockage('userFavorites', []);
-    let userHiddenProfiles = lireJSONStockage('userHiddenProfiles', []);
     let activityNotifications = lireJSONStockage('activityNotifications', []);
     let correctionRequestsLocal = lireJSONStockage('correctionRequests', []);
     let showFavoritesOnly = false;
-    let compactMode = lireJSONStockage('compactMode', false) === true;
-    let currentTheme = lireJSONStockage('directoryTheme', 'blue');
-    let cosmeticBadge = lireJSONStockage('cosmeticBadge', 'none');
+    let listViewEnabled = lireJSONStockage('vipListViewEnabled', false) === true;
     let adminCorrectionRequestCache = [];
     let activeRemovalProfile = null;
     let adminRemovalRequestCache = [];
@@ -530,12 +511,6 @@
       activityNotifications.unshift({ id: `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, titre: String(titre).slice(0,100), detail: String(detail).slice(0,250), date: new Date().toISOString() });
       activityNotifications = activityNotifications.slice(0, 30);
       enregistrerJSONStockage('activityNotifications', activityNotifications);
-      actualiserCompteurActivite();
-    }
-
-    function actualiserCompteurActivite() {
-      const count = document.getElementById('activity-count');
-      if (count) count.textContent = String(activityNotifications.length);
     }
 
     function actualiserCompteurFavoris() {
@@ -550,25 +525,46 @@
       if (banner) banner.classList.toggle('hidden', vipActif);
       if (vipTools) vipTools.classList.toggle('hidden', !vipActif);
       if (!vipActif) showFavoritesOnly = false;
-      document.body.classList.toggle('compact-mode', compactMode && vipActif);
-      document.body.dataset.vipTheme = vipActif ? currentTheme : 'blue';
-      const themeSelect = document.getElementById('theme-select');
-      const compactBtn = document.getElementById('compact-toggle-btn');
-      if (themeSelect) themeSelect.value = currentTheme;
-      const badgeSelect = document.getElementById('cosmetic-badge-select');
-      if (badgeSelect) badgeSelect.value = cosmeticBadge;
-      actualiserBadgeDecoratif();
-      if (compactBtn) compactBtn.innerHTML = compactMode && estVip() ? '<i class="fa-solid fa-grip mr-1"></i>Vue complète' : '<i class="fa-solid fa-grip mr-1"></i>Vue compacte';
+      const btn = document.getElementById('show-favorites-btn');
+      const label = document.getElementById('favorites-button-label');
+      if (btn) btn.classList.toggle('border-amber-300', showFavoritesOnly);
+      if (label) label.textContent = showFavoritesOnly ? 'Afficher tous les profils' : 'Afficher mes favoris';
+      document.body.classList.remove('compact-mode');
+      document.body.dataset.vipTheme = 'blue';
+      actualiserVueListe();
       actualiserCompteurFavoris();
-      actualiserCompteurActivite();
+    }
+
+    function actualiserVueListe() {
+      const grid = document.getElementById('cards-grid');
+      const button = document.getElementById('toggle-list-view-btn');
+      const active = estVip() && listViewEnabled;
+      if (grid) grid.classList.toggle('list-view', active);
+      if (button) {
+      button.setAttribute('aria-pressed', String(active));
+      button.classList.toggle('border-sky-300', active);
+      button.innerHTML = active
+        ? '<i class="fa-solid fa-grip mr-1"></i>Vue cartes'
+        : '<i class="fa-solid fa-list mr-1"></i>Vue liste';
+      }
+    }
+
+    function basculerVueListe() {
+      if (!estVip()) { openVipModal(); return; }
+      listViewEnabled = !listViewEnabled;
+      enregistrerJSONStockage('vipListViewEnabled', listViewEnabled);
+      actualiserVueListe();
+      currentPage = 1;
+      renderCards();
     }
 
     function basculerFavoris() {
       if (!estVip()) { openVipModal(); return; }
       showFavoritesOnly = !showFavoritesOnly;
       const btn = document.getElementById('show-favorites-btn');
-      if (btn) btn.classList.toggle('border-amber-400', showFavoritesOnly);
-      ajouterActivite(showFavoritesOnly ? 'Favoris affichés' : 'Affichage complet', showFavoritesOnly ? 'Filtre des favoris activé.' : 'Tous les profils autorisés sont affichés.');
+      const label = document.getElementById('favorites-button-label');
+      if (btn) btn.classList.toggle('border-amber-300', showFavoritesOnly);
+      if (label) label.textContent = showFavoritesOnly ? 'Afficher tous les profils' : 'Afficher mes favoris';
       currentPage = 1; renderCards();
     }
 
@@ -585,101 +581,6 @@
       enregistrerJSONStockage('userFavorites', userFavorites);
       actualiserCompteurFavoris(); renderCards();
     }
-
-    function basculerMasquagePersonnel(item) {
-      if (!estVip()) { openVipModal(); return; }
-      const key = getProfileKey(item);
-      if (userHiddenProfiles.includes(key)) {
-        userHiddenProfiles = userHiddenProfiles.filter(value => value !== key);
-        ajouterActivite('Profil réaffiché pour moi', item.displayName || 'Profil');
-      } else {
-        userHiddenProfiles.push(key);
-        ajouterActivite('Profil masqué pour moi', item.displayName || 'Profil');
-      }
-      enregistrerJSONStockage('userHiddenProfiles', userHiddenProfiles);
-      renderCards();
-    }
-
-    function ouvrirGestionProfilsMasques() {
-      if (!estVip()) { openVipModal(); return; }
-      afficherProfilsMasquesPersonnels();
-      document.getElementById('hidden-profiles-modal').classList.remove('hidden');
-    }
-
-    function fermerGestionProfilsMasques() { document.getElementById('hidden-profiles-modal').classList.add('hidden'); }
-
-    function afficherProfilsMasquesPersonnels() {
-      const list = document.getElementById('hidden-profiles-list');
-      if (!list) return;
-      list.innerHTML = '';
-      const hidden = rawData.filter(item => userHiddenProfiles.includes(getProfileKey(item)));
-      if (!hidden.length) {
-        const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Tu n’as masqué aucun profil pour le moment.'; list.appendChild(p); return;
-      }
-      hidden.forEach(item => {
-        const row = document.createElement('div'); row.className = 'flex items-center justify-between gap-3 bg-slate-950 border border-slate-800 rounded-xl p-3';
-        const label = document.createElement('span'); label.className = 'text-sm text-slate-200'; label.textContent = `${item.displayName || 'Profil'}${item.class ? ` · Classe ${item.class}` : ''}`;
-        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'shrink-0 px-3 py-2 rounded-lg bg-sky-600 text-white text-xs font-semibold'; btn.textContent = 'Réafficher';
-        btn.addEventListener('click', () => { userHiddenProfiles = userHiddenProfiles.filter(value => value !== getProfileKey(item)); enregistrerJSONStockage('userHiddenProfiles', userHiddenProfiles); ajouterActivite('Profil réaffiché pour moi', item.displayName || 'Profil'); afficherProfilsMasquesPersonnels(); renderCards(); });
-        row.append(label, btn); list.appendChild(row);
-      });
-    }
-
-    function basculerModeCompact() {
-      if (!estVip()) { openVipModal(); return; }
-      compactMode = !compactMode; enregistrerJSONStockage('compactMode', compactMode); actualiserControleVIP(); renderCards();
-      ajouterActivite('Affichage modifié', compactMode ? 'Vue compacte activée.' : 'Vue complète activée.');
-    }
-
-    function actualiserBadgeDecoratif() {
-      const badge = document.getElementById('user-cosmetic-badge');
-      if (!badge) return;
-      const presets = {
-        collector: { text: 'Collectionneur ⭐', classes: 'bg-amber-500/15 text-amber-200 border-amber-500/20' },
-        explorer: { text: 'Explorateur 🧭', classes: 'bg-emerald-500/15 text-emerald-200 border-emerald-500/20' },
-        organise: { text: 'Bien organisé ✨', classes: 'bg-violet-500/15 text-violet-200 border-violet-500/20' }
-      };
-      const preset = estVip() ? presets[cosmeticBadge] : null;
-      badge.className = 'px-2.5 py-1 rounded-full text-[10px] font-bold border ' + (preset ? preset.classes : 'hidden');
-      badge.textContent = preset ? preset.text : '';
-      badge.classList.toggle('hidden', !preset);
-    }
-
-    function changerBadgeDecoratif(value) {
-      if (!estVip()) {
-        const select = document.getElementById('cosmetic-badge-select');
-        if (select) select.value = cosmeticBadge;
-        openVipModal();
-        return;
-      }
-      cosmeticBadge = ['none', 'collector', 'explorer', 'organise'].includes(value) ? value : 'none';
-      enregistrerJSONStockage('cosmeticBadge', cosmeticBadge);
-      actualiserBadgeDecoratif();
-      ajouterActivite('Badge décoratif modifié', cosmeticBadge === 'none' ? 'Aucun badge.' : 'Nouveau badge décoratif appliqué.');
-    }
-
-    function changerTheme(value) {
-      if (!estVip()) { document.getElementById('theme-select').value = currentTheme; openVipModal(); return; }
-      currentTheme = ['blue','violet','emerald'].includes(value) ? value : 'blue';
-      enregistrerJSONStockage('directoryTheme', currentTheme); document.body.dataset.vipTheme = currentTheme;
-      ajouterActivite('Thème modifié', `Thème ${currentTheme} activé.`);
-    }
-
-    function ouvrirCentreActivite() {
-      if (!estVip()) { openVipModal(); return; }
-      const list = document.getElementById('activity-list'); list.innerHTML = '';
-      if (!activityNotifications.length) { const p = document.createElement('p'); p.className = 'text-xs text-slate-500 italic p-3'; p.textContent = 'Aucune activité enregistrée sur cet appareil.'; list.appendChild(p); }
-      activityNotifications.forEach(item => {
-        const card = document.createElement('div'); card.className = 'bg-slate-950 border border-slate-800 rounded-xl p-3';
-        const title = document.createElement('p'); title.className = 'text-sm font-semibold text-slate-200'; title.textContent = item.titre || 'Activité';
-        const detail = document.createElement('p'); detail.className = 'text-xs text-slate-400 mt-1'; detail.textContent = item.detail || '';
-        const date = document.createElement('p'); date.className = 'text-[10px] text-slate-600 mt-2'; date.textContent = item.date ? new Date(item.date).toLocaleString('fr-FR') : '';
-        card.append(title, detail, date); list.appendChild(card);
-      });
-      document.getElementById('activity-modal').classList.remove('hidden');
-    }
-    function fermerCentreActivite() { document.getElementById('activity-modal').classList.add('hidden'); }
-    function effacerCentreActivite() { if (!estVip()) { openVipModal(); return; } activityNotifications = []; enregistrerJSONStockage('activityNotifications', activityNotifications); ouvrirCentreActivite(); actualiserCompteurActivite(); }
 
     async function signalerCorrection(item) {
       const reason = prompt(`Décris la correction à apporter au profil « ${String(item.displayName || 'Profil').slice(0,120)} » :`);
@@ -836,6 +737,7 @@
 
     function renderCards() {
       const grid = document.getElementById('cards-grid');
+      actualiserVueListe();
       const emptyState = document.getElementById('empty-state');
       const paginationContainer = document.getElementById('pagination-container');
       
@@ -850,7 +752,6 @@
         if (hideLevel === 'all') return false;
         if (userRole === 'normal' && (hideLevel === 'normal' || hideLevel === 'vip')) return false;
         if (userRole === 'vip' && hideLevel === 'vip') return false;
-        if (estVip() && userHiddenProfiles.includes(getProfileKey(item))) return false;
         if (showFavoritesOnly && !userFavorites.includes(getProfileKey(item))) return false;
 
         const searchableText = normaliserRecherche([item.displayName, item.class, item.role, item.school, item.motto, ...(Array.isArray(item.relations) ? item.relations : [])].join(' '));
@@ -941,21 +842,6 @@
           actionBar.appendChild(favoriteButton);
         }
 
-        if (estVip()) {
-          const hideButton = document.createElement('button');
-          hideButton.type = 'button';
-          hideButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] font-semibold';
-          hideButton.innerHTML = `<i class="fa-solid fa-eye-slash mr-1"></i>Masquer pour moi`;
-          hideButton.addEventListener('click', () => basculerMasquagePersonnel(item));
-          actionBar.appendChild(hideButton);
-        } else {
-          const hideButton = document.createElement('button');
-          hideButton.type = 'button';
-          hideButton.className = 'flex-1 min-w-[95px] px-2.5 py-2 rounded-lg border border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-semibold';
-          hideButton.innerHTML = '<i class="fa-solid fa-eye-slash mr-1"></i>Masquer (VIP)';
-          hideButton.addEventListener('click', () => openVipModal());
-          actionBar.appendChild(hideButton);
-        }
         const correctionButton = document.createElement('button');
         correctionButton.type = 'button';
         correctionButton.className = 'px-2.5 py-2 rounded-lg border border-sky-500/20 bg-sky-500/5 hover:bg-sky-500/10 text-sky-200 text-[11px] font-semibold';
@@ -983,7 +869,7 @@
             <div class="text-center py-4">
               <div class="w-12 h-12 mx-auto mb-3 rounded-2xl bg-amber-500/15 text-amber-300 flex items-center justify-center text-xl"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
               <h4 class="font-extrabold text-white text-base">Ton annuaire, à ta façon</h4>
-              <p class="text-xs text-slate-300 mt-2">Sans promotions intégrées, avec favoris privés, profils masqués pour toi et personnalisation.</p>
+              <p class="text-xs text-slate-300 mt-2">Sans promotions intégrées et avec tes favoris privés, réservés aux membres VIP.</p>
               <button type="button" onclick="openVipModal()" class="mt-4 px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg transition"><i class="fa-solid fa-crown mr-1"></i>Découvrir le VIP</button>
             </div>
             <p class="text-[10px] text-slate-500 text-center">Les profils retirés ou masqués par l’administration restent indisponibles.</p>
@@ -1812,8 +1698,8 @@
       const clearSearch = document.getElementById('clear-search');
 
       actualiserControleVIP();
-      document.body.classList.toggle('compact-mode', compactMode && estVip());
-      document.body.dataset.vipTheme = currentTheme;
+      document.body.classList.remove('compact-mode');
+      document.body.dataset.vipTheme = 'blue';
 
       searchInput.addEventListener('input', () => {
         clearSearch.classList.toggle('hidden', searchInput.value.length === 0);
@@ -1832,8 +1718,6 @@
       document.getElementById('filter-class').addEventListener('change', () => { currentPage = 1; renderCards(); });
       document.getElementById('sort-order').addEventListener('change', () => { currentPage = 1; renderCards(); });
       document.getElementById('admin-search-profile').addEventListener('input', renderAdminVisibilityList);
-      document.getElementById('theme-select').addEventListener('change', e => changerTheme(e.target.value));
-      document.getElementById('cosmetic-badge-select').addEventListener('change', e => changerBadgeDecoratif(e.target.value));
 
       const dropZone = document.getElementById('drop-zone');
       const fileInput = document.getElementById('file-input');
